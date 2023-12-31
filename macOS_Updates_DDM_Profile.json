@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "it.next.macOS.update",
+  "type": "object",
+  "properties": {
+    "Plist an Credentials": {
+      "description": "Default values",
+      "type": "object",
+      "properties": {
+        "DeferralPlist": {
+          "title": "DeferralPlist",
+          "default": "/Library/Application Support/JAMF/com.custom.deferrals.plist",
+          "description": "Location where the plist is stored so that the values CurrentDeferralValue, ForceInstallDateTime and the PlanID are stored locally on the device.",
+          "type": "string"
+        },
+        "DeferralValueCustom": {
+          "title": "Maximum Deferral",
+          "default": "5",
+          "description": "How many days can the user postpone the update. This value is also used to specify the current date plus this value then specifies the date on which the update is forced. ",
+          "type": "number"
+        },
+"scriptLog": {
+          "title": "scriptLog",
+          "default": "/var/log/de.next.macOS.Update.log",
+          "description": "Where should the script logs be read and saved",
+          "type": "string"
+        },
+        "JamfProCredentials": {
+          "title": "Encoded Credentials für API User",
+          "description": "Mandatory field! (printf 'username:password' | iconv -t ISO-8859-1 | base64 -i -). Can either be stored here or via the Jamf Pro variable 4. It is recommended that these are transferred via the Jamf Pro variable, then they are not stored on the device.",
+          "type": "string"
+        }
+      }
+    },
+    "Updates": {
+      "description": "Upgrade macOS major version (z.B. 12.x auf 13.x)",
+      "type": "object",
+      "properties": {
+        "MajorUpdateapply": {
+          "title": "Update macOS Major",
+          "default": "false",
+          "description": "Upgrade macOS major version (z.B. 12.x auf 13.x)",
+          "type": "string"
+        },
+        "MajorUpdateapplyVersion": {
+          "title": "Update macOS Minor zu Version",
+          "description": "If nothing is specified, the latest available version is used. Not yet defined in the script.",
+          "type": "string"
+        }
+      }
+    },
+    "Dialog Settings": {
+      "description": "The Swift dialog window can be adjusted in height, width, heading size and font size. If no values are set via the plist, then the values from the script are used.",
+      "type": "object",
+      "properties": {
+        "Dialog_update_width": {
+          "title": "Dialog_update_width",
+          "default": "740",
+          "description": "Width of the window ",
+          "type": "string"
+        },
+        "Dialog_update_height": {
+          "title": "Dialog_update_height",
+          "default": "540",
+          "description": "Height of the window, If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_update_titlefont": {
+          "title": "Dialog_update_titlefont",
+          "default": "20",
+          "description": "Font size for the titel. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_update_messagefont": {
+          "title": "Dialog_update_messagefont",
+          "default": "14",
+          "description": "Font size for the text. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_power_width": {
+          "title": "Dialog_power_width",
+          "default": "740",
+          "description": "Width of the window",
+          "type": "string"
+        },
+        "Dialog_power_height": {
+          "title": "Dialog_power_height",
+          "default": "240",
+          "description": "Height of the window, If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_power_titlefont": {
+          "title": "Dialog_power_titlefont",
+          "default": "20",
+          "description": "Font size for the titel. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_power_messagefont": {
+          "title": "Dialog_power_messagefont",
+          "default": "14",
+          "description": "Font size for the text. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_wait_width": {
+          "title": "Dialog_wait_width",
+          "default": "740",
+          "description": "Width of the window",
+          "type": "string"
+        },
+        "Dialog_wait_height": {
+          "title": "Dialog_wait_height",
+          "default": "320",
+          "description": "Height of the window, If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_wait_titlefont": {
+          "title": "Dialog_wait_titlefont",
+          "default": "20",
+          "description": "Font size for the titel. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_wait_messagefont": {
+          "title": "Dialog_wait_messagefont",
+          "default": "12",
+          "description": "Font size for the text. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_error_width": {
+          "title": "Dialog_error_width",
+          "default": "600",
+          "description": "Width of the window",
+          "type": "string"
+        },
+        "Dialog_error_height": {
+          "title": "Dialog_error_height",
+          "default": "200",
+          "description": "Height of the window, If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_error_titlefont": {
+          "title": "Dialog_error_titlefont",
+          "default": "20",
+          "description": "Font size for the titel. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        },
+        "Dialog_error_messagefont": {
+          "title": "Dialog_error_messagefont",
+          "default": "12",
+          "description": "Font size for the text. If not specified, the default value in the script is used. The value specified in the script, in this default value equals",
+          "type": "string"
+        }
+      }
+    },
+    "Buttontimer": {
+      "description": "So that the user takes the time to read the message and does not accidentally click the buttons, they are deactivated for a certain time and only reactivated after expiry. This time can be adjusted here for the various windows. Specified in seconds. If no values are set via the profile, the default values are used aim Script.",
+      "type": "object",
+      "properties": {
+        "buttontimer_Final_Message": {
+          "title": "Timer für Buttons Final Message",
+          "default": "30",
+          "description": "How long does it take until the buttons in the Finals user info are activated and the user can click on them so that the user has enough time to read the message and the message in it. Specified in seconds.",
+          "type": "number"
+        },
+        "buttontimer_pleaseWait_new": {
+          "title": "Timer für Buttons Please Wait",
+          "default": "30",
+          "description": "How long does it take until the buttons in the Please Wait message are activated and the user can click them so that the user has enough time to read the message and the message within it? This informs the user that they should please be patient. Specified in seconds.",
+          "type": "number"
+        },
+        "buttontimer_pleaseWait_alt": {
+          "title": "Timer für Buttons Please Wait",
+          "default": "30",
+          "description": "How long does it take until the buttons in the Please Wait message are activated and the user can click them so that the user has enough time to read the message and the message within it? This informs the user that they should please be patient. Specified in seconds.",
+          "type": "number"
+        },
+        "buttontimer_ErrorMessage": {
+          "title": "Timer für Buttons Error Message",
+          "default": "30",
+          "description": "How long does it take until the buttons in the error message are activated and the user can click on them so that the user has enough time to read the message and the message within it? This informs the user that something has gone wrong. Specified in seconds.",
+          "type": "number"
+        }
+      }
+    },
+    "Messanges": {
+      "description": "Definition of the messages for the standard message, error message, etc. Please specify the complete messages in the respective language carefully. The following variables can be used: %REAL_NAME% | %CURRENT_DEFERRAL_VALUE% | %forceInstallLocalDateTime% These are replaced in the script with the respective variables in the script",
+      "type": "object",
+      "properties": {
+        "MaxMessageTime": {
+          "title": "Timeout Meldung",
+          "default": "300",
+          "description": "How long the message is displayed to users before it is automatically closed. Specified in seconds.",
+          "type": "number"
+        },
+        "InstallButtonLabel": {
+          "title": "Button to proceed.",
+          "description": "Button to proceed.",
+          "type": "string"
+        },
+        "DeferButtonLabel": {
+          "title": "Button: Move",
+          "description": "Button to move.",
+          "type": "string"
+        },
+        "SupportContact": {
+          "title": "Support Contact",
+          "description": "Who can the user contact if necessary.",
+          "type": "string"
+        },
+        "StandardUpdatePrompt": {
+          "title": "Update: Standard message",
+          "description": "The message with which the user is informed about the available updates.",
+          "type": "string"
+        },
+        "ForcedUpdatePrompt": {
+          "title": "Update: Last message",
+          "description": "The message when the user has used up their maximum number of postponements.",
+          "type": "string"
+        },
+        "PleaseWaitTitle": {
+          "title": "Please wait: Title",
+          "description": "Heading of the window informing about the started update.",
+          "type": "string"
+        },
+        "PleaseWaitDescription": {
+          "title": "Please wait: Message",
+          "description": "Message informing about the started update.",
+          "type": "string"
+        },
+        "PowerWaitTimer": {
+          "title": "Power: Timeout",
+          "default": "60",
+          "description": "Time in seconds, how long the user has to connect the power supply unit.",
+          "type": "number"
+        },
+        "PowerTitle": {
+          "title": "Power: Titel",
+          "description": "Title of the window that prompts you to connect the power supply unit.",
+          "type": "string"
+        },
+        "PowerDescription": {
+          "title": "Power: Message",
+          "description": "Message prompting you to connect the power supply unit.",
+          "type": "string"
+        },
+        "NoPowerDescription": {
+          "title": "Power: Abort message",
+          "description": "Message informing you that the power supply unit has been disconnected.",
+          "type": "string"
+        },
+        "ErrorTitle": {
+          "title": "Error: Title",
+          "description": "Heading of the window that informs about an error.",
+          "type": "string"
+        },
+        "ErrorDescription": {
+          "title": "Error: Message",
+          "description": "Message informing about an error.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
