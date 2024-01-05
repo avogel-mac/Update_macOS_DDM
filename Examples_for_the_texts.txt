@@ -1,0 +1,81 @@
+# # # # # # # # # # # # # # #
+# Update: Standard Meldung  #
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Hallo, %REAL_NAME% für deinen Mac ist ein Betriebssystem-Update verfügbar.\n\nKlick auf %Install_Button_Custom%, um mit der Softwareaktualisierung fortzufahren und die Aktualisierung auszuführen.\n\nWenn du den Vorgang zu diesem Zeitpunkt nicht starten kannst, kannst du den Vorgang um einen Tag verschieben.\n\nWenn die Anzahl der Aufschübe aufgebraucht ist, wird die Aktualisierung erzwungen. Die Aktualisierung dauert etwa 30 Minuten. Der Vorgang hängt von deiner Internetverbindung ab. \nDu kannst das macOS Software-Update jederzeit selbst installieren gehe hierzu\n\n &gt; System Preferences &gt; Software Update\n\nDu kannst das Update noch %CURRENT_DEFERRAL_VALUE% verschieben\n\nDas Update wird spätestens am %forceInstallLocalDateTime% automatisch erzwungen.
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+# # # # # # # # # # # # # # #
+# Update: Letzte Meldung  	#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Hallo, %REAL_NAME% das Betriebssystem-Updates wurde leider immer noch nicht installiert. \n\nDu hast die Aktualisierungen bereits so oft wie möglich verschoben.\n\nBitte speichern deine Arbeit und klicke auf Aktualisieren. Diese Meldung wird nach ablauf der unten eingeblendeter Zeit automatisch geschlossen und der Vorgang fortgesetzt.
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+# # # # # # # # # # # # # # #
+# Bitte warten: Titel		#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Software Update wird vorbereitet
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+# # # # # # # # # # # # # # #
+# Bitte warten: Meldung		#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Software-Updateprozes wurde gestartet und arbeitet im Hintergrund.\nBitte...\n- warte den Neustart des Computers ab.\n- schalte den Mac nicht aus.\n- trenn das Netzteil nicht von deinem Gerät.\n\nDieser Vorgang kann eine Weile dauern.\nBitte denke daran, all deine Daten zu speichern.\nBevor die Installation startet, bekommt du eine Nachricht oben rechts mit einem Timer von 1 Minute. \n\nFalls dich diese Meldung stört, kannst du diese auch gerne schliessen
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+
+# # # # # # # # # # # # # # #
+# Strom: Titel				#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Bitte das Netzteil anschliessen...
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+# # # # # # # # # # # # # # #
+# Strom: Meldung			#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Bitte verbinde deinen Mac mit einem AC-Netzteil an das Stromnetz an.\nDieser Prozess wird fortgesetzt, sobald die AC-Stromversorgung innerhalb der folgende Zeitdauer erkannt wird:\n\n
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+# # # # # # # # # # # # # # #
+# Strom: Meldung Abbruch	#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Die Stromversorgung wurde nach einer Wartezeit nicht hergestellt.
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+# # # # # # # # # # # # # # #
+# Fehler: Titel				#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+ERROR
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+# # # # # # # # # # # # # # #
+# Fehler: Meldung			#
+# # # # # # # # # # # # # # #
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
+Leider ist ein Fehler aufgetreten. Mitte melde dich bei msp@nextenterprise.it
+
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
