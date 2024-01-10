@@ -3,7 +3,7 @@
   "title": "it.next.macOS.update",
   "type": "object",
   "properties": {
-    "Plist an Credentials": {
+    "Plist_an_Credentials": {
       "description": "Default values",
       "type": "object",
       "properties": {
@@ -19,7 +19,7 @@
           "description": "How many days can the user postpone the update. This value is also used to specify the current date plus this value then specifies the date on which the update is forced. ",
           "type": "number"
         },
-"scriptLog": {
+        "scriptLog": {
           "title": "scriptLog",
           "default": "/var/log/de.next.macOS.Update.log",
           "description": "Where should the script logs be wrote and saved",
@@ -49,7 +49,7 @@
         }
       }
     },
-    "Dialog Settings": {
+    "Dialog_Settings": {
       "description": "The Swift dialog window can be adjusted in height, width, heading size and font size. If no values are set via the plist, the values from the script are used.",
       "type": "object",
       "properties": {
