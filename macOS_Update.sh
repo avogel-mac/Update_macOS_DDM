@@ -108,9 +108,9 @@ fi
 #
 # Validate
 
-macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) Expected output: 10, 11, 12
-macOSMINOR=$(sw_vers -productVersion | cut -d'.' -f2) Expected output: 14, 15, 06, 01
-macOSVERSION=${macOSMAJOR}$(printf "%02d" "$macOSMINOR") Expected output: 1014, 1015, 1106, 1203
+macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) # Expected output: 10, 11, 12
+macOSMINOR=$(sw_vers -productVersion | cut -d'.' -f2) # Expected output: 14, 15, 06, 01
+macOSVERSION=${macOSMAJOR}$(printf "%02d" "$macOSMINOR") # Expected output: 1014, 1015, 1106, 1203
 
 checkMDMService() {
 	mdmENROLLED="FALSE"
@@ -254,75 +254,78 @@ fi
 # macOS Updates
 #
 
-Major_Update_apply=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" MajorUpdateapply 2>"/dev/null")
+Major_Update_apply=$(/usr/libexec/PlistBuddy -c "Print :Updates:MajorUpdateapply" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 #
 # Not yet defined in the script
 #
 
-Major_Update_apply_Version=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" MajorUpdateapplyVersion 2>"/dev/null")
+Major_Update_apply_Version=$(/usr/libexec/PlistBuddy -c "Print :Updates:MajorUpdateapplyVersion" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 #
 # Timers and values
 #
 
-Max_Message_Time_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" MaxMessageTime 2>"/dev/null")
-Power_Wait_Timer=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" PowerWaitTimer 2>"/dev/null")
+Max_Message_Time_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:MaxMessageTime" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Power_Wait_Timer=$(/usr/libexec/PlistBuddy -c "Print :Messanges:PowerWaitTimer" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
-buttontimer_Final_Message_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" buttontimer_Final_Message 2>"/dev/null")
-buttontimer_pleaseWait_new_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" buttontimer_pleaseWait_new 2>"/dev/null")
-buttontimer_pleaseWait_alt_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" buttontimer_pleaseWait_alt 2>"/dev/null")
-buttontimer_ErrorMessage_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" buttontimer_ErrorMessage 2>"/dev/null")
+buttontimer_Final_Message_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_Final_Message" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+buttontimer_pleaseWait_new_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_pleaseWait_new" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+buttontimer_pleaseWait_alt_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_pleaseWait_alt" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+buttontimer_ErrorMessage_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_ErrorMessage" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
 #
 # Test and Messages
 #
 
-Install_Button_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" InstallButtonLabel 2>"/dev/null")
-Defer_Button_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" DeferButtonLabel 2>"/dev/null")
+
+Install_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:InstallButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Defer_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:DeferButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 Defer_Button_Custom=$(echo -e "$Defer_Button_Custom")
-Support_Contact_Custom=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" SupportContact 2>"/dev/null")
+Support_Contact_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:SupportContact" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
-Please_Wait_Title=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" PleaseWaitTitle 2>"/dev/null")
-Power_Title=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" PowerTitle 2>"/dev/null")
-Error_Title=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" ErrorTitle 2>"/dev/null")
+Please_Wait_Title=$(/usr/libexec/PlistBuddy -c "Print :Messanges:PleaseWaitTitle" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Power_Title=$(/usr/libexec/PlistBuddy -c "Print :Messanges:PowerTitle" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Error_Title=$(/usr/libexec/PlistBuddy -c "Print :Messanges:ErrorTitle" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
-Forced_Update_Prompt=`/usr/libexec/PlistBuddy -c "Print :ForcedUpdatePrompt:" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
+
+Forced_Update_Prompt=`/usr/libexec/PlistBuddy -c "Print :Messanges:ForcedUpdatePrompt" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
 Forced_Update_Prompt="$(echo -e "$Forced_Update_Prompt" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CurrentDeferralValue%/${CurrentDeferralValue}/")"
 
-Please_Wait_Description=`/usr/libexec/PlistBuddy -c "Print :PleaseWaitDescription:" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
+Please_Wait_Description=`/usr/libexec/PlistBuddy -c "Print :Messanges:PleaseWaitDescription" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
 Please_Wait_Description="$(echo -e "$Please_Wait_Description" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${forceInstallLocalDateTime}/")"
 
-Power_Description=`/usr/libexec/PlistBuddy -c "Print :PowerDescription:" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
+Power_Description=`/usr/libexec/PlistBuddy -c "Print :Messanges:PowerDescription" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
 Power_Description="$(echo -e "$Power_Description" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/")"
 
-No_Power_Description=`/usr/libexec/PlistBuddy -c "Print :NoPowerDescription:" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
+No_Power_Description=`/usr/libexec/PlistBuddy -c "Print :Messanges::NoPowerDescription" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
 No_Power_Description="$(echo -e "$No_Power_Description" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/")"
 
-Error_Description=`/usr/libexec/PlistBuddy -c "Print :ErrorDescription:" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
+Error_Description=`/usr/libexec/PlistBuddy -c "Print :Messanges::ErrorDescription" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
 Error_Description="$(echo -e "$Error_Description" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/")"
 
 #
 # SwiftDialog Window
 #
 
-Dialog_update_width=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_update_width 2>"/dev/null")
-Dialog_update_height=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_update_height 2>"/dev/null")
-Dialog_update_titlefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_update_titlefont 2>"/dev/null")
-Dialog_update_messagefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_update_messagefont 2>"/dev/null")
+#Dialog_update_width=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_update_width 2>"/dev/null")
+Dialog_update_width=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_width" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_update_height=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_height" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_update_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_titlefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_update_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_messagefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
-Dialog_power_width=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_power_width 2>"/dev/null")
-Dialog_power_height=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_power_height 2>"/dev/null")
-Dialog_power_titlefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_power_titlefont 2>"/dev/null")
-Dialog_power_messagefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_power_messagefont 2>"/dev/null")
+Dialog_power_width=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_power_width" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_power_height=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_power_height" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_power_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_power_titlefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_power_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_power_messagefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
-Dialog_wait_width=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_wait_width 2>"/dev/null")
-Dialog_wait_height=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_wait_height 2>"/dev/null")
-Dialog_wait_titlefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_wait_titlefont 2>"/dev/null")
-Dialog_wait_messagefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_wait_messagefont 2>"/dev/null")
+Dialog_wait_width=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_wait_width" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_wait_height=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_wait_height" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_wait_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_wait_titlefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_wait_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_wait_messagefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
-Dialog_error_width=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_error_width 2>"/dev/null")
-Dialog_error_height=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_error_height 2>"/dev/null")
-Dialog_error_titlefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_error_titlefont 2>"/dev/null")
-Dialog_error_messagefont=$(/usr/bin/defaults read "/Library/Managed Preferences/${BundleIDPlist}" Dialog_error_messagefont 2>"/dev/null")
+Dialog_error_width=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_error_width" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_error_height=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_error_height" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_error_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_error_titlefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+Dialog_error_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_error_messagefont" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
 #
 # Start Jamf Pro Variablen
@@ -338,6 +341,7 @@ if [[ -z "$Jamf_Pro_URL" ]]; then
 	exit 1
 fi
 
+
 jamf_api_client="$4"
 if [[ -z "$jamf_api_client" ]]; then
 	
@@ -345,6 +349,7 @@ if [[ -z "$jamf_api_client" ]]; then
 	ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
 	exit 1
 fi
+
 
 jamf_api_secret="$5"
 if [[ -z "$jamf_api_secret" ]]; then
@@ -1518,9 +1523,9 @@ ErrorMessage(){
 
 ## Auslesen des aktuellen macOS
 Current_macOS=$(/usr/bin/sw_vers -productVersion)
-macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) Erwartete Ausgabe: 10, 11, 12
-macOSMINOR=$(sw_vers -productVersion | cut -d'.' -f2) Erwartete Ausgabe: 14, 15, 06, 01
-macOSVERSION=${macOSMAJOR}$(printf "%02d" "$macOSMINOR") Erwartete Ausgabe: 1014, 1015, 1106, 1203
+macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) # Erwartete Ausgabe: 10, 11, 12
+macOSMINOR=$(sw_vers -productVersion | cut -d'.' -f2) # Erwartete Ausgabe: 14, 15, 06, 01
+macOSVERSION=${macOSMAJOR}$(printf "%02d" "$macOSMINOR") # Erwartete Ausgabe: 1014, 1015, 1106, 1203
 softwareUpdateLIST="$(/usr/sbin/softwareupdate --list 2>&1)"
 
 
