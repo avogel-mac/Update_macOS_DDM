@@ -338,7 +338,6 @@ if [[ -z "$Jamf_Pro_URL" ]]; then
 	exit 1
 fi
 
-jamf_api_client="13b2545b-4114-41a4-8718-5d27bcf7b869"
 jamf_api_client="$4"
 if [[ -z "$jamf_api_client" ]]; then
 	
@@ -347,7 +346,6 @@ if [[ -z "$jamf_api_client" ]]; then
 	exit 1
 fi
 
-jamf_api_secret="9vQNRSBBa5xZOfWoSpqrdh89D5D1KlVt0Z_9KH3Iigc4Qkf1ID5KJwcFNGjvgkR0"
 jamf_api_secret="$5"
 if [[ -z "$jamf_api_secret" ]]; then
 	
