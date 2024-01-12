@@ -41,11 +41,6 @@
           "default": "false",
           "description": "Upgrade macOS major version (e.g. 12.x to 13.x)",
           "type": "string"
-        },
-        "MajorUpdateapplyVersion": {
-          "title": "Update macOS Minor zu Version",
-          "description": "If nothing is specified, the latest available version is used. Not yet defined in the script.",
-          "type": "string"
         }
       }
     },
@@ -208,6 +203,11 @@
         },
         "StandardUpdatePrompt": {
           "title": "Update: Standard message",
+          "description": "The message with which the user is informed about the available updates.",
+          "type": "string"
+        },
+        "StandardUpdatePrompt_OLD": {
+          "title": "Update: Standard message( OLD API )",
           "description": "The message with which the user is informed about the available updates.",
           "type": "string"
         },
