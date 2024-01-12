@@ -10,9 +10,7 @@ The script offers the following advantages:
 - No user password is required.
 
 Example of the dialog about an available macOS update for non-DDM-capable macOS
-https://github.com/avogel-mac/Update_macOS_DDM/blob/main/Pictures/macOS_Update.png
 ![](https://github.com/avogel-mac/Update_macOS_DDM/blob/main/Pictures/macOS_Update.png?raw=true)
 
 Example of the dialog about an available macOS upgrade for non-DDM-capable macOS
-https://github.com/avogel-mac/Update_macOS_DDM/blob/main/Pictures/macOS_Upgrade.png
 ![](https://github.com/avogel-mac/Update_macOS_DDM/blob/main/Pictures/macOS_Upgrade.png?raw=true)
