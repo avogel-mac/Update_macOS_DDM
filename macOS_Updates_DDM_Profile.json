@@ -24,11 +24,6 @@
           "default": "/var/log/de.next.macOS.Update.log",
           "description": "Where should the script logs be wrote and saved",
           "type": "string"
-        },
-        "JamfProCredentials": {
-          "title": "Encoded Credentials für API User",
-          "description": "Mandatory field! (printf 'username:password' | iconv -t ISO-8859-1 | base64 -i -). Can either be stored here or via the Jamf Pro variable $4. It is recommended that these are transferred via the Jamf Pro variable, so they are not stored on the device.",
-          "type": "string"
         }
       }
     },
