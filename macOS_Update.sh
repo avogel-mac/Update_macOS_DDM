@@ -4,7 +4,7 @@
 # Shellscript		:	macOS Update with deferrals
 # Author			:	Andreas Vogel, NEXT Enterprise GmbH
 #
-# Info				:	Script only works with macOS Big Sur (13) and higher
+# Info				:	Script only works with macOS Big Sur (11) and higher
 #
 # 					:	BETA
 #
@@ -91,7 +91,7 @@ if [[ -d "$dialog_app" && -f "$dialog_bin" ]]; then
 else
 	# downloading and installing swiftDialog
 	
-	ScriptLogUpdate "[ Function-Check SwiftDialog ]: Downloading swiftDialog.app..."
+	ScriptLogUpdate "Function-Check SwiftDialog: Downloading swiftDialog.app..."
 	if /usr/bin/curl -L "$dialog_download_url" -o "$workdir/dialog.pkg" ; then
 		if ! installer -pkg "$workdir/dialog.pkg" -target / ; then
 			
@@ -274,6 +274,7 @@ buttontimer_pleaseWait_alt_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontim
 buttontimer_ErrorMessage_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_ErrorMessage" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 
 # * * * * * * * * * * * * * * * * * * * * * * * * Test and Messages * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+
 
 Install_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:InstallButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 Defer_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:DeferButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist")
@@ -623,7 +624,7 @@ check_power_status() {
 		ScriptLogUpdate "[ Function-Check Power Status ]: WARNING - No AC power detected"
 		
 		
-		ScriptLogUpdate "[ Function-Check Power Status ]: INFO - Check if the current battery Level."
+		ScriptLogUpdate "[ Function-Check Power Status ]: INFO - Check if the current battery status is enough."
 		
 		currentBatteryLEVEL=$(pmset -g ps | grep '%' | awk '{print $3}' | sed -e 's/%;//g')
 		
@@ -727,10 +728,10 @@ get_api_token() {
 	if [[ $(echo "${curl_response}" | grep -c 'token') -gt 0 ]]
 	then
 		if [[ $(sw_vers -productVersion | cut -d'.' -f1) -lt 12 ]]
-			then
-				api_token=$(echo "${curl_response}" | plutil -extract access_token raw -)
-			else 
-				api_token=$(echo "${curl_response}" | awk -F '"' '{print $4;}' | xargs)
+		then
+			api_token=$(echo "${curl_response}" | plutil -extract access_token raw -)
+		else 
+			api_token=$(echo "${curl_response}" | awk -F '"' '{print $4;}' | xargs)
 		fi
 		ScriptLogUpdate "[ Funktion-GET API Token ]: Token was successfully generated"
 		
@@ -820,11 +821,11 @@ get_Install_forceDateTime() {
 					remainingTime_Message=${!remainingDaysTitel}
 			fi
 			
-			# Check whether the current plan is still valid.
-			# Read the PlanID from the plan list
+			# Prüfung, ob der aktuelle Plan noch Bestand hat.
+			# Lese die PlanID aus der Plist
 			planIDFromPlist=$(/usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist")
 			
-			# Check whether a value is present
+			# Prüfung, ob ein Wert vorhanden ist
 			
 				if [[ -z "$planIDFromPlist" ]]
 					then
@@ -839,13 +840,13 @@ get_Install_forceDateTime() {
 				fi
 			
 		else
-			# Date and key do not exist, set a date
+			# Datum und Schlüssel existiert nicht, lege ein Datum fest
 			
 			ScriptLogUpdate "[ Function-GET Force Date Time ]: No time has been set yet"
 			
 			ScriptLogUpdate "[ Function-GET Force Date Time ]: new time is being determined"
 			currentUnixTime=$(date +%s)
-			futureUnixTime=$((currentUnixTime + (Deferral_Value_Custom * 86400)))  		# 86400 seconds per day
+			futureUnixTime=$((currentUnixTime + (Deferral_Value_Custom * 86400)))  		# 86400 Sekunden pro Tag
 			futureUnixTimeDateTime=$(/bin/date -j -f "%s" "$futureUnixTime" "+%Y-%m-%dT%H:%M:%S")
 			
 			
@@ -929,7 +930,7 @@ create_Update_Plan() {
 	
 	# deviceID="42"
 	
-	if [[ $Major_Update_apply == "true" ]]
+	if [[ $Upgrade_API == "true" ]]
 	then
 		jamfJSON='{
 "devices": [
@@ -971,10 +972,10 @@ create_Update_Plan() {
 		
 		ScriptLogUpdate "[ Function-Create Plan ]: plan was set successfully"
 		
-		# Extract the plan ID from the response
+		# Extrahiere die Plan-ID aus der Antwort
 		planID=$(echo "$commandRESULT" | grep -o '"planId" : "[^"]*' | awk -F'"' '{print $4}')
 		
-		# Check whether the extraction was successful
+		# Überprüfe, ob die Extrahierung erfolgreich war
 		if [[ ! -z "$planID" ]]; then
 			
 			ScriptLogUpdate "[ Function-Create Plan ]: Plan ID: $planID"
@@ -1283,14 +1284,13 @@ updateCLI() {
 
 updateCLI_without_DDM() {
 	
-	
 	jamfAPIURL="${Jamf_Pro_URL}/api/v1/managed-software-updates/plans"
 	
 	response=$(curl -X GET "$Jamf_Pro_URL/JSSResource/computers/udid/$udid" -H "accept: application/xml" -H "Authorization: Bearer ${api_token}")
 	deviceID=$(echo $response | /usr/bin/awk -F'<id>|</id>' '{print $2}')
 	
 	
-	if [[ $Major_Update_apply == "true" ]]
+	if [[ $Upgrade_API == "true" ]]
 	then
 		jamfJSON='{
 					"devices": [
@@ -1300,9 +1300,10 @@ updateCLI_without_DDM() {
 							}
 					],
 					"config": {
-							"updateAction": "DOWNLOAD_INSTALL",
-							"versionType": "LATEST_MAJOR",
-							"specificVersion": "NO_SPECIFIC_VERSION"
+							"updateAction": "DOWNLOAD_INSTALL_SCHEDULE",
+	"versionType": "LATEST_MAJOR",
+	"specificVersion": "NO_SPECIFIC_VERSION",
+	"maxDeferrals": 0
 					}
 			}'
 	else
@@ -1325,14 +1326,14 @@ updateCLI_without_DDM() {
 	
 	if [[ $(echo "$commandRESULT" | grep -c '200') -gt 0 ]] || [[ $(echo "$commandRESULT" | grep -c '201') -gt 0 ]]
 	then
-		ScriptLogUpdate "[ Function-Update Without DDM ]: Successful: MDM command for update/upgrade was sent successfully."
-		ScriptLogUpdate "[ Function-Update Without DDM ]: API token is rejected"
+		ScriptLogUpdate "[ Function-Update Without DDM ]:Successful: MDM command for update/upgrade was sent successfully."
+		ScriptLogUpdate "[ FFunction-Update Without DDM ]:API token is rejected"
 		delete_api_token
 		pleaseWait_alt
 		
 	else
 		ScriptLogUpdate ""$commandRESULT""
-		ScriptLogUpdate "[ Function-Update Without DDM ]: MDM command could not be sent."
+		ScriptLogUpdate "[ Function-Update Without DDM ]:MDM command could not be sent."
 		
 		ErrorMessage
 	fi
@@ -1352,11 +1353,13 @@ get_Update_Status() {
 	statusValue=$(echo "$commandRESULT" | grep -o '"status" *: *"[^"]*"' | awk -F'"' '{print $4}')
 	
 	
-	ScriptLogUpdate "[ Function-GET Update Status ]: The status is: $statusValue"
+	ScriptLogUpdate "[ Function-GET Update Status ]:The status is: $statusValue"
 	
 }
 
 pleaseWait_new(){
+	
+	# Aktuell nicht benötigt, da kein 'Please Wait'-Fenster mehr angezeigt wird.
 	
 	Please_Wait_Description=`/usr/libexec/PlistBuddy -c "Print :Messanges:PleaseWaitDescription" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
 	Please_Wait_Description="$(echo -e "$Please_Wait_Description" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${forceInstallLocalDateTime}/")"
@@ -1457,7 +1460,7 @@ find_correct_API() {
 			
 			ScriptLogUpdate "[ Function-Find Correct API ]: Send the command to update the device via the new API"
 			
-			macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) # Expected output: 10, 11, 12
+			macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) # Erwartete Ausgabe: 10, 11, 12
 			
 			if [[ $macOSMAJOR -ge 14 ]]; then
 				NEW_API="TRUE"
@@ -1527,11 +1530,12 @@ ErrorMessage(){
 # # # # # # # # # # # # # # # # # # # # # # # # # Check for Softwareupdates # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## Read out the current macOS
+
+## Auslesen des aktuellen macOS
 Current_macOS=$(/usr/bin/sw_vers -productVersion)
-macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) # Expected output: 10, 11, 12
-macOSMINOR=$(sw_vers -productVersion | cut -d'.' -f2) # Expected output: 14, 15, 06, 01
-macOSVERSION=${macOSMAJOR}$(printf "%02d" "$macOSMINOR") # Expected output: 1014, 1015, 1106, 1203
+macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) # Erwartete Ausgabe: 10, 11, 12
+macOSMINOR=$(sw_vers -productVersion | cut -d'.' -f2) # Erwartete Ausgabe: 14, 15, 06, 01
+macOSVERSION=${macOSMAJOR}$(printf "%02d" "$macOSMINOR") # Erwartete Ausgabe: 1014, 1015, 1106, 1203
 softwareUpdateLIST="$(/usr/sbin/softwareupdate --list 2>&1)"
 
 
@@ -1541,7 +1545,7 @@ if [[ $(echo "$softwareUpdateLIST" | grep -c 'Software Update found') -gt 0 ]]; 
 	ScriptLogUpdate "[ Functions-Check macOS Updates ]: Check if this is for the macOS in question"
 	
 	if [[ $macOSMAJOR -ge 12 ]]; then 
-		# Several macOS updates/upgrades can be listed for macOS 12.
+		#Für macOS 12 können mehrere macOS-Updates/Upgrades aufgelistet werden.
 		allSoftwareUpdateLABELS=($(echo "$softwareUpdateLIST" | awk -F ': ' '/Label:/{print $2}'))
 		allSoftwareUpdateTITLES=($(echo "$softwareUpdateLIST" | awk -F ',' '/Title:/ {print $1}' | cut -d ' ' -f 2-))
 		macOSSoftwareUpdateLABELS=($(echo "$softwareUpdateLIST" | grep 'Label: macOS' | sed -e 's/* Label: //' | sort -k3 -r -V))
@@ -1590,26 +1594,68 @@ elif [[ $(echo "$softwareUpdateLIST" | grep -c 'No new software available.') -gt
 	exit 0
 fi
 
-if [[ -n ${recommendedSoftwareUpdateLABELS[*]} ]]; then
+
+Major_Updates_Avalible_Check=$(echo "${macOSSoftwareUpdateVERSIONUpgrade}" | cut -d '.' -f1)
+
+if [[ $Major_Updates_Avalible_Check -gt $macOSMAJOR ]]
+then
+	Major_Updates_Avalible="true"
+else
+	Major_Updates_Avalible="false"
+fi
 	
-	ScriptLogUpdate "[ Functions-Check macOS Updates ]: Updates for '${recommendedSoftwareUpdateLABELS[@]}' were found."
-	ScriptLogUpdate "[ Functions-Check macOS Updates ]: Update Safari via softwareupdate --install --safari-only"
-	
-	softwareupdate --install --safari-only
+if [[ $Major_Updates_Avalible == "True" && $Major_Update_apply == "true" ]]; then
+	Upgrade_API="true"
+else
+	Upgrade_API="false"
 fi
 
-
-if [[ -n ${macOSSoftwareUpdateVERSIONUpgrade} ]]; then
-	ScriptLogUpdate "[ Functions-Check macOS Updates ]: macOSSoftwareUpdateVERSIONUpgrade: $macOSSoftwareUpdateVERSIONUpgrade"
-	ScriptLogUpdate "[ Functions-Check macOS Updates ]: macOSMAJOR: ${macOSMAJOR}"
+if [[ $Major_Updates_Avalible == "true" && $Major_Update_apply == "true" ]]; then
 	
-	if [[ $Major_Update_apply == "true" && $(echo "${macOSSoftwareUpdateVERSIONUpgrade}" | cut -d '.' -f1) -gt $macOSMAJOR ]]; then
+	ScriptLogUpdate "[ Functions-Check macOS Updates ]: Upgrades auf macOS $macOSSoftwareUpdateVERSIONUpgrade available"
+	futureUpdate=$macOSSoftwareUpdateVERSIONUpgrade
+	
+	get_api_token
+	find_correct_API
+	
+	if [[ "$NEW_API" == "TRUE" ]]
+	then
 		
-		ScriptLogUpdate "[ Functions-Check macOS Updates ]: Upgrades auf macOS $macOSSoftwareUpdateVERSIONUpgrade available"
-		futureUpdate=$macOSSoftwareUpdateVERSIONUpgrade
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: Check the current update plan"
 		
+		get_Install_forceDateTime
+		
+		
+	elif [[ "$NEW_API" == "DDM_False" ]]; then
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: NEW API without DDM"
+		
+	elif [[ "$NEW_API" == "FALSE" ]]; then	
+		
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: old API still activated."
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: Plan cannot be set or tested"
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: PLEASE switch to the new API"
+		
+	else
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: API server point was not recognized"
+		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+		exit 1
+	fi
+	
+else
+	
+	
+	if [[ $Major_Updates_Avalible_Check -gt $macOSMAJOR ]]; then
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: Upgrades auf macOS $macOSSoftwareUpdateVERSIONUpgrade sind ebenfalls verfügbar"
+	fi
+	
+	
+	if [[ -n ${macOSSoftwareUpdateVERSION} ]]
+	then
+		futureUpdate=$macOSSoftwareUpdateVERSION
 		get_api_token
 		find_correct_API
+		
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: macOS Update '${macOSSoftwareUpdateVERSION}' was found."
 		
 		if [[ "$NEW_API" == "TRUE" ]]
 		then
@@ -1635,59 +1681,24 @@ if [[ -n ${macOSSoftwareUpdateVERSIONUpgrade} ]]; then
 		fi
 		
 	else
-		ScriptLogUpdate "[ Functions-Check macOS Updates ]: Upgrades auf macOS $macOSSoftwareUpdateVERSIONUpgrade sind ebenfalls verfügbar"
 		
-		if [[ -n ${macOSSoftwareUpdateVERSION} ]]
-		then
-			futureUpdate=$macOSSoftwareUpdateVERSION
-			get_api_token
-			find_correct_API
-			
-			ScriptLogUpdate "[ Functions-Check macOS Updates ]: macOS Update '${macOSSoftwareUpdateVERSION}' was found."
-			
-			if [[ "$NEW_API" == "TRUE" ]]
-			then
-				
-				ScriptLogUpdate "[ Functions-Check macOS Updates ]: Check the current update plan"
-				
-				get_Install_forceDateTime
-				
-				
-			elif [[ "$NEW_API" == "DDM_False" ]]; then
-				ScriptLogUpdate "[ Functions-Check macOS Updates ]: NEW API without DDM"
-				
-			elif [[ "$NEW_API" == "FALSE" ]]; then	
-				
-				ScriptLogUpdate "[ Functions-Check macOS Updates ]: old API still activated."
-				ScriptLogUpdate "[ Functions-Check macOS Updates ]: Plan cannot be set or tested"
-				ScriptLogUpdate "[ Functions-Check macOS Updates ]: PLEASE switch to the new API"
-				
-			else
-				ScriptLogUpdate "[ Functions-Check macOS Updates ]: API server point was not recognized"
-				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
-				exit 1
-			fi
-			
-		else
-			
-			ScriptLogUpdate "[ Functions-Check macOS Updates ]: no updates found"
-			
-			setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
-			
-			
-			if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
-				/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
-			fi
-			
-			
-			if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
-				/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
-			fi
-			
-			delete_api_token
-			
-			exit 0
+		ScriptLogUpdate "[ Functions-Check macOS Updates ]: no updates found"
+		
+		setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
+		
+		
+		if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
+			/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
 		fi
+		
+		
+		if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
+			/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
+		fi
+		
+		delete_api_token
+		
+		exit 0
 	fi
 fi
 
@@ -1712,7 +1723,7 @@ else
 		dialog_args=("${default_dialog_args[@]}")
 		dialog_args+=(
 			"--infobox"
-			"### _________________##\n\n### "${!Device_Info}"##\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n$remainingTime_Message:\n$remainingTime"
+			"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n$remainingTime_Message:\n$remainingTime"
 			"--icon"
 			"${welcomeIcon}"
 			"--iconsize"
@@ -1800,7 +1811,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n### "${!Device_Info}"##\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
@@ -1876,7 +1887,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n### "${!Device_Info}"##\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
@@ -1958,7 +1969,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n### "${!Device_Info}"##\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
@@ -2034,7 +2045,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n### "${!Device_Info}"##\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
