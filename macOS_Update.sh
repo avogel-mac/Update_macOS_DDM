@@ -900,6 +900,19 @@ validate_Plan_ID() {
 					
 					ScriptLogUpdate "[ Function-Validate Plan ID ]: It was terminated without an error code."
 					
+					setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
+					
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
+					fi
+					
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
+					fi
+					
+					ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+					exit 1
+					
 				fi
 				
 			;;
@@ -1167,9 +1180,21 @@ get_Plan_Status() {
 				else
 					
 					ScriptLogUpdate "[ Function-Plan Status ]: It was terminated without an error code."
+					
+					setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
+					
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
+					fi
+					
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
+					fi
+					
+					ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+					exit 1
 				fi
-				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
-				exit 1
+				
 			;;
 			
 			PlanCanceled)
