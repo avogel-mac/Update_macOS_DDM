@@ -1,18 +1,32 @@
 # # # # # # # # # # # # # # #
-# Update: Standard Meldung OLD  #
+# Update: Standard Meldung OLD  ( MDM )#
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
-Hallo, %REAL_NAME%, für deinen Mac steht ein Betriebssystem-Update zur Verfügung.\n\nKlicke auf %Install_Button_Custom%, um mit der Softwareaktualisierung fortzufahren und die Aktualisierung durchzuführen.\n\nFalls du den Vorgang zu diesem Zeitpunkt nicht starten kannst, hast du die Möglichkeit, den Vorgang um einen Tag zu verschieben.\n\nSobald die Anzahl der Aufschübe aufgebraucht ist, wird die Aktualisierung erzwungen. Der Vorgang dauert etwa 30 Minuten und ist abhängig von deiner Internetverbindung. \nDu kannst das macOS Software-Update jederzeit selbst installieren. Hierzu gehe bitte zu:\n\n &gt; System Preferences &gt; Software Update\n\nDu kannst das Update noch %CURRENT_DEFERRAL_VALUE% verschieben.
+German:
+
+Hallo %REAL_NAME%, für deinen Mac steht ein Betriebssystem-Update zur Verfügung.\n\nKlicke auf %Install_Button_Custom%, um mit der Softwareaktualisierung fortzufahren und die Aktualisierung durchzuführen.\n\nFalls du den Vorgang zu diesem Zeitpunkt nicht starten kannst, hast du die Möglichkeit, den Vorgang um einen Tag zu verschieben.\n\nSobald die Anzahl der Aufschübe aufgebraucht ist, wird die Aktualisierung erzwungen. Der Vorgang dauert etwa 30 Minuten und ist abhängig von deiner Internetverbindung. \nDu kannst das macOS Software-Update jederzeit selbst installieren. Hierzu gehe bitte zu:\n\n &gt; System Preferences &gt; Software Update\n\nDu kannst das Update noch %CURRENT_DEFERRAL_VALUE% verschieben.
+
+English:
+
+Hello %REAL_NAME%, an operating system update is available for your Mac.\n\nClick on %Install_Button_Custom% to proceed with the software update and perform the installation.\n\nIf you are unable to initiate the process at this time, you have the option to postpone it for one day.\n\nOnce the number of deferrals is exhausted, the update will be enforced. The process takes about 30 minutes and depends on your internet connection.\nYou can manually install the macOS software update at any time. To do so, please go to:\n\n > System Preferences > Software Update\n\nYou can still defer the update for %CURRENT_DEFERRAL_VALUE%
+
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
 # # # # # # # # # # # # # # #
-# Update: Standard Meldung NEW #
+# Update: Standard Meldung NEW ( DDM ) #
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
-Hallo, %REAL_NAME%, für deinen Mac steht ein Betriebssystem-Update zur Verfügung.\n\nKlicke auf %Install_Button_Custom%, um mit der Softwareaktualisierung fortzufahren und die Aktualisierung durchzuführen.\n\nFalls du den Vorgang zu diesem Zeitpunkt nicht starten kannst, hast du die Möglichkeit, den Vorgang zu verschieben.\n\nDas Update wird spätestens am %forceInstallLocalDateTime% automatisch erzwungen. Der Vorgang dauert etwa 30 Minuten. \nDu kannst das macOS Software-Update jederzeit selbst installieren. Hierzu gehe bitte zu:\n\n &gt; System Preferences &gt; Software Update\n\nOder klicke auf %Install_Button_Custom% um die System Preferences zu öffnen.
+German:
+
+Hallo %REAL_NAME%, für deinen Mac steht ein Betriebssystem-Update zur Verfügung.\n\nKlicke auf %Install_Button_Custom%, um mit der Softwareaktualisierung fortzufahren und die Aktualisierung durchzuführen.\n\nFalls du den Vorgang zu diesem Zeitpunkt nicht starten kannst, hast du die Möglichkeit, den Vorgang zu verschieben.\n\nDas Update wird spätestens am %forceInstallLocalDateTime% automatisch erzwungen. Der Vorgang dauert etwa 30 Minuten. \nDu kannst das macOS Software-Update jederzeit selbst installieren. Hierzu gehe bitte zu:\n\n &gt; System Preferences &gt; Software Update\n\nOder klicke auf %Install_Button_Custom% um die System Preferences zu öffnen.
+
+Englisch:
+
+Hello %REAL_NAME%, an operating system update is available for your Mac.\n\nClick on %Install_Button_Custom% to proceed with the software update and perform the installation.\n\nIf you are unable to initiate the process at this time, you have the option to postpone it.\n\nThe update will be automatically enforced no later than %forceInstallLocalDateTime%. The process takes about 30 minutes.\nYou can manually install the macOS software update at any time. To do so, please go to:\n\n > System Preferences > Software Update\n\nOr click on %Install_Button_Custom% to open System Preferences. 
+
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
@@ -21,7 +35,13 @@ Hallo, %REAL_NAME%, für deinen Mac steht ein Betriebssystem-Update zur Verfügu
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
-Hallo, %REAL_NAME%, das Betriebssystem-Update wurde leider immer noch nicht installiert. \n\nDu hast die Aktualisierungen bereits so oft wie möglich verschoben.\n\nBitte speichere deine Arbeit und klicke auf "Aktualisieren". Diese Meldung wird nach Ablauf der unten eingeblendeten Zeit automatisch geschlossen, und der Vorgang wird fortgesetzt.
+German:
+
+Hallo %REAL_NAME%, das Betriebssystem-Update wurde leider immer noch nicht installiert. \n\nDu hast die Aktualisierungen bereits so oft wie möglich verschoben.\n\nBitte speichere deine Arbeit und klicke auf "Aktualisieren". Diese Meldung wird nach Ablauf der unten eingeblendeten Zeit automatisch geschlossen, und der Vorgang wird fortgesetzt.
+
+Englisch:
+
+Hello %REAL_NAME%, the operating system update has unfortunately still not been installed.\n\nYou have already postponed the updates as many times as possible.\n\nPlease save your work and click on "Update." This message will be automatically closed after the time displayed below elapses, and the process will continue
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
@@ -30,7 +50,13 @@ Hallo, %REAL_NAME%, das Betriebssystem-Update wurde leider immer noch nicht inst
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
+German:
+
 Software Update wird vorbereitet
+
+English:
+
+Software Update is being prepared
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
@@ -38,8 +64,13 @@ Software Update wird vorbereitet
 # Bitte warten: Meldung		#
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+German:
 
 Der Software-Updateprozess wurde gestartet und arbeitet im Hintergrund.\nBitte...\n- warte den Neustart des Computers ab\n- schalte den Mac nicht aus.\n- trenn das Netzteil nicht von deinem Gerät.\n\nDieser Vorgang kann eine Weile dauern. Bitte denke daran, all deine Daten zu speichern. Bevor die Installation startet, erhältst du eine Nachricht oben rechts mit einem Timer von 1 Minute. \n\nFalls dich diese Meldung stört, kannst du sie auch gerne schließen.
+
+Englisch:
+
+The software update process has been initiated and is working in the background.\nPlease...\n- wait for the computer to restart\n- do not turn off your Mac.\n- do not disconnect the power adapter from your device.\n\nThis process may take a while. Please remember to save all your data. Before the installation begins, you will receive a message in the top right corner with a timer of 1 minute.\n\nIf this message is bothersome, you are welcome to close it.
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
@@ -48,8 +79,13 @@ Der Software-Updateprozess wurde gestartet und arbeitet im Hintergrund.\nBitte..
 # Strom: Titel				#
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+German:
 
 Bitte das Netzteil anschliessen...
+
+Englisch:
+
+Please connect the power adapter...
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
@@ -57,8 +93,13 @@ Bitte das Netzteil anschliessen...
 # Strom: Meldung			#
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+German:
 
 Bitte verbinde deinen Mac mit einem AC-Netzteil ans Stromnetz.\nDieser Prozess wird fortgesetzt, sobald die AC-Stromversorgung innerhalb der folgenden Zeitdauer erkannt wird:\n\n
+
+Englisch:
+
+Please connect your Mac to an AC power source. This process will resume once the AC power is detected within the following time period:\n\n
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
@@ -66,8 +107,13 @@ Bitte verbinde deinen Mac mit einem AC-Netzteil ans Stromnetz.\nDieser Prozess w
 # Strom: Meldung Abbruch	#
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+German:
 
 Die Stromversorgung wurde nach einer Wartezeit nicht hergestellt.
+
+Englisch:
+
+The power supply was not established after a waiting period.
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
@@ -85,6 +131,12 @@ ERROR
 # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
+German:
+
 Leider ist ein Fehler aufgetreten. Mitte melde dich bei msp@nextenterprise.it
+
+English:
+
+Unfortunately, an error has occurred. Please contact msp@nextenterprise.it for assistance.
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
