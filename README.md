@@ -9,7 +9,7 @@ The script offers the following advantages:
 - The administrator does not need to schedule the updates.
 - The script supports the current DDM methods.
 - No hidden admin account is required.
-- No user password is required.
+- It is not necessary to enter a user password for performing the update.
 - All texts that are displayed to the user in the dialog can be transferred via the configuration profile. No customization in the script necessary.
 - The size of the window and the font size can be transferred via the configuration profile
   
