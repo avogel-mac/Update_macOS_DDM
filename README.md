@@ -1,5 +1,7 @@
 # macOS Update
 
+## Please note that the Jamf Pro API for DDM softwareupdate is currently in beta.
+
 This script is used to update macOS devices within the period specified by the administrator.
 
 The script offers the following advantages:
@@ -16,3 +18,6 @@ Example of the dialog about an available macOS update for non-DDM-capable macOS
 
 Example of the dialog about an available macOS upgrade for non-DDM-capable macOS
 ![](https://github.com/avogel-mac/Update_macOS_DDM/blob/main/Pictures/macOS_Upgrade.png?raw=true)
+
+
+Questions, suggestions, or improvement proposals are welcome and appreciated.
