@@ -1748,7 +1748,7 @@ else
 		dialog_args=("${default_dialog_args[@]}")
 		dialog_args+=(
 			"--infobox"
-			"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n$remainingTime_Message:\n$remainingTime"
+			"_________________\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n$remainingTime_Message:\n$remainingTime"
 			"--icon"
 			"${welcomeIcon}"
 			"--iconsize"
@@ -1836,7 +1836,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"_________________\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
@@ -1912,7 +1912,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"_________________\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
@@ -1994,7 +1994,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"_________________\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
@@ -2070,7 +2070,7 @@ else
 			dialog_args=("${default_dialog_args[@]}")
 			dialog_args+=(
 				"--infobox"
-				"### _________________##\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
+				"_________________\n\n"${!Device_Info}"\n\n${!Current_OS}: $Current_macOS \n\n${!available_OS}: $futureUpdate \n\n${!CurrentDeferralValue_Text}: $CurrentDeferralValue"
 				"--icon"
 				"${welcomeIcon}"
 				"--iconsize"
