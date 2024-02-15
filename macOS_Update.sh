@@ -2,7 +2,7 @@
 
 #############################################################################
 # Shellscript		:	macOS Update with deferrals
-# Author			:	Andreas Vogel, NEXT Enterprise GmbH
+# Author				:	Andreas Vogel, NEXT Enterprise GmbH
 #
 # Info				:	Script only works with macOS Big Sur (11) and higher
 #
@@ -889,29 +889,40 @@ validate_Plan_ID() {
 					then
 						
 						ScriptLogUpdate "[ Function-Validate Plan ID ]: Bootstrap token is not stored in MDM"
+						
+						ScriptLogUpdate "[ Function-Plan Status ]: Bootstrap token is not stored in MDM"
+						ScriptLogUpdate "[ Function-Plan Status ]: Try to reactivate it with the user"
+						
+						Enable_BootstrapToken_with_currentUser
+						
 												
 					elif [[ "$errorReasons" == *"EXISTING_PLAN_FOR_DEVICE_IN_PROGRESS"* ]]
 					then
 						
 						ScriptLogUpdate "[ Function-Validate Plan ID ]: Another plan is already in progress for the device."
+						
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
+						fi
+						
+						
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
+						fi
 												
 					fi
 				else
 					
 					ScriptLogUpdate "[ Function-Validate Plan ID ]: It was terminated without an error code."
-					
-					setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
-					
 					if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
 						/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
 					fi
+					
 					
 					if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
 						/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
 					fi
 					
-					ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
-					exit 1
 					
 				fi
 				
@@ -1173,6 +1184,14 @@ get_Plan_Status() {
 					then
 						
 						ScriptLogUpdate "[ Function-Plan Status ]: Another plan is already in progress for the device."
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
+						fi
+						
+						
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
+						fi
 						ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END * * * * * * * * * * * * * * * * * * * * * * *"
 						exit 0
 						
@@ -1181,20 +1200,17 @@ get_Plan_Status() {
 					
 					ScriptLogUpdate "[ Function-Plan Status ]: It was terminated without an error code."
 					
-					setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
-					
 					if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
 						/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
 					fi
 					
+					
 					if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
 						/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
 					fi
-					
-					ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
-					exit 1
 				fi
-				
+				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+				exit 1
 			;;
 			
 			PlanCanceled)
