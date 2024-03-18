@@ -326,14 +326,14 @@ Dialog_error_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Di
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 dialogVersion=$( /usr/local/bin/dialog --version )
 
-testMode="${6}"                                                     # Parameter 6: Debug Mode [ true | false (default) ]
+testMode="${6}"                                                     # Parameter 6: Debug Mode [ true (default) | false ]
 
 if [[ -z "$testMode" ]]
 	then
 		ScriptLogUpdate "[ Function-testMode ]: No value set via the Jamf Pro variables."
 		ScriptLogUpdate "[ Function-testMode ]: Now set the 'testMode' to true"
 		ScriptLogUpdate "[ Function-testMode ]: Without Jamf Pro variables, the script is always executed in testMode."
-		testMode="false"
+		testMode="true"
 	
 	else
 		ScriptLogUpdate "[ Function-testMode ]: Script is executed as $testMode."
