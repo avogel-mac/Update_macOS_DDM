@@ -5,12 +5,11 @@
 #
 # Info				:	Script only works with macOS Big Sur (11) and higher
 #
-# 					:	BETA
 #
 #############################################################################
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="0.9.1"
+scriptVersion="0.9.2"
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -519,10 +518,11 @@ fi
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
 Language=$(/usr/libexec/PlistBuddy -c 'print AppleLanguages:0' "/Users/${currentUser}/Library/Preferences/.GlobalPreferences.plist")
-if [[ $Language = de* ]]; then
-	UserLanguage="de"
-else
-	UserLanguage="en"
+if [[ $Language = de* ]]
+	then
+		UserLanguage="de"
+	else
+		UserLanguage="en"
 fi
 
 Device_Info_de="Geräteinformationen"
@@ -833,32 +833,6 @@ get_api_token() {
 	fi
 }
 
-get_api_token_OLD() {
-	authToken=$(/usr/bin/curl "${Jamf_Pro_URL}/api/v1/auth/token" --silent --request POST --header "Authorization: Basic ${Jamf_Pro_Credentials}")
-	if [[ $(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}') -lt 12 ]]
-	then
-		api_token=$(/usr/bin/awk -F \" 'NR==2{print $4}' <<< "$authToken" | /usr/bin/xargs)
-		
-	else
-		api_token=$(/usr/bin/plutil -extract token raw -o - - <<< "$authToken")
-	fi
-	
-	tokenCHECK=$(curl --header "Authorization: Bearer ${api_token}" --write-out "%{http_code}" --silent --output /dev/null --request GET --url "${Jamf_Pro_URL}/api/v1/auth")
-	
-	if [[ $tokenCHECK -eq 200 ]]
-	then
-		
-		ScriptLogUpdate "[ Funktion-GET API Token ]: Token was successfully generated"
-		
-	else
-		
-		ScriptLogUpdate "[ Funktion-GET API Token ]: Token could not be generated"
-		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
-		ErrorMessage
-		exit 1
-	fi
-}
-
 get_Install_forceDateTime() {
 	
 	if [[ "${testMode}" == "true" ]]
@@ -872,14 +846,15 @@ get_Install_forceDateTime() {
 		
 		
 		
-		if [[ $Language = de* ]]; then
-			
-			HumanReadableTime=$(date -jf "%Y-%m-%dT%H:%M:%S" "$ForceInstallDateTime" "+%A dem %d.%m.%Y um %H:%M Uhr")
-			forceInstallLocalDateTime="$HumanReadableTime"
-			
-		else
-			HumanReadableTime=$(date -jf "%Y-%m-%dT%H:%M:%S" "$ForceInstallDateTime" "+%A on %d.%m.%Y at %H:%M Uhr")
-			forceInstallLocalDateTime="$HumanReadableTime"
+		if [[ $Language = de* ]]
+			then
+				
+				HumanReadableTime=$(date -jf "%Y-%m-%dT%H:%M:%S" "$ForceInstallDateTime" "+%A dem %d.%m.%Y um %H:%M Uhr")
+				forceInstallLocalDateTime="$HumanReadableTime"
+				
+			else
+				HumanReadableTime=$(date -jf "%Y-%m-%dT%H:%M:%S" "$ForceInstallDateTime" "+%A on %d.%m.%Y at %H:%M Uhr")
+				forceInstallLocalDateTime="$HumanReadableTime"
 		fi
 		
 				
@@ -894,18 +869,18 @@ get_Install_forceDateTime() {
 		
 		# Check if it's the same day
 		if [ $remainingTimeDayorHours -lt 86400 ]
-		then
-			# Calculate remaining hours
-			remainingTime=$((remainingTimeDayorHours / 3600))
-			ScriptLogUpdate "[ Function-GET Force Date Time testMode ]: Verbleibende Stunden bis zum Installationszeitpunkt: $remainingTime Stunden"
-			remainingTime_Message=${!remainingHourseTitel}
-		else
-			# Calculate remaining days
-			remainingTime=$((remainingTimeDayorHours / 86400))
-			
-			ScriptLogUpdate "[ Function-GET Force Date Time testMode ]: Verbleibende Tage bis zum Installationszeitpunkt: $remainingTime Tage"
-			
-			remainingTime_Message=${!remainingDaysTitel}
+			then
+				# Calculate remaining hours
+				remainingTime=$((remainingTimeDayorHours / 3600))
+				ScriptLogUpdate "[ Function-GET Force Date Time testMode ]: Verbleibende Stunden bis zum Installationszeitpunkt: $remainingTime Stunden"
+				remainingTime_Message=${!remainingHourseTitel}
+			else
+				# Calculate remaining days
+				remainingTime=$((remainingTimeDayorHours / 86400))
+				
+				ScriptLogUpdate "[ Function-GET Force Date Time testMode ]: Verbleibende Tage bis zum Installationszeitpunkt: $remainingTime Tage"
+				
+				remainingTime_Message=${!remainingDaysTitel}
 		fi
 	
 	else
@@ -1040,6 +1015,10 @@ validate_Plan_ID() {
 						
 						ScriptLogUpdate "[ Function-Validate Plan ID ]: Another plan is already in progress for the device."
 						
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist"
+						fi
+						
 						if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
 							/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
 						fi
@@ -1076,6 +1055,7 @@ validate_Plan_ID() {
 	else
 		
 		ScriptLogUpdate "[ Function-Validate Plan ID ]: Error when extracting the plan status."
+		
 		
 	fi
 }
@@ -1129,39 +1109,46 @@ create_Update_Plan() {
 	commandRESULT=$(curl --header "Authorization: Bearer ${api_token}" --header "Content-Type: application/json" --write-out "%{http_code}" --silent --show-error --request POST --url "${jamfAPIURL}" --data "${jamfJSON}")
 	
 	if [[ $(echo "$commandRESULT" | grep -c '200') -gt 0 ]] || [[ $(echo "$commandRESULT" | grep -c '201') -gt 0 ]]
-	then
-		
-		ScriptLogUpdate "[ Function-Create Plan ]: Successful MDM command for update/upgrade was sent successfully."
-		
-		ScriptLogUpdate "[ Function-Create Plan ]: plan was set successfully"
-		
-		# Extrahiere die Plan-ID aus der Antwort
-		planID=$(echo "$commandRESULT" | grep -o '"planId" : "[^"]*' | awk -F'"' '{print $4}')
-		
-		# Überprüfe, ob die Extrahierung erfolgreich war
-		if [[ ! -z "$planID" ]]; then
+		then
 			
-			ScriptLogUpdate "[ Function-Create Plan ]: Plan ID: $planID"
+			ScriptLogUpdate "[ Function-Create Plan ]: Successful MDM command for update/upgrade was sent successfully."
 			
-			sleep 300
+			ScriptLogUpdate "[ Function-Create Plan ]: plan was set successfully"
 			
-			# Wait until the plan has been implemented before checking the result
-			get_Plan_Status
+			# Extrahiere die Plan-ID aus der Antwort
+			planID=$(echo "$commandRESULT" | grep -o '"planId" : "[^"]*' | awk -F'"' '{print $4}')
+			
+			
+			# Überprüfe, ob die Extrahierung erfolgreich war
+			if [[ ! -z "$planID" ]]
+				then
+					
+					ScriptLogUpdate "[ Function-Create Plan ]: Plan ID: $planID"
+					ScriptLogUpdate "[ Function-Plan Status ]: Enter the date in the plist"
+					
+					/usr/libexec/PlistBuddy -c "add :$BundleID:TargetmacOSUpdateVersion string $macOSSoftwareUpdateVERSION" "$DeferralPlist"
+					/usr/libexec/PlistBuddy -c "add :$BundleID:forceInstallLocalDateTime string $futureUnixTimeDateTime" "$DeferralPlist"
+					/usr/libexec/PlistBuddy -c "add :$BundleID:PlanID string $planID" "$DeferralPlist"
+					
+					sleep 100
+					
+					# Wait until the plan has been implemented before checking the result
+					get_Plan_Status
+					
+				else
+					
+					ScriptLogUpdate "[ Function-Create Plan ]: Error when extracting the plan ID."
+			fi
 			
 		else
 			
-			ScriptLogUpdate "[ Function-Create Plan ]: Error when extracting the plan ID."
-		fi
-		
-	else
-		
-		ScriptLogUpdate ""$commandRESULT""
-		
-		ScriptLogUpdate "[ Function-Create Plan ]: MDM command could not be sent."
-		delete_api_token
-		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
-		
-		exit 1
+			ScriptLogUpdate ""$commandRESULT""
+			
+			ScriptLogUpdate "[ Function-Create Plan ]: MDM command could not be sent."
+			delete_api_token
+			ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+			
+			exit 1
 	fi
 }
 
@@ -1312,6 +1299,29 @@ get_Plan_Status() {
 					then
 						
 						ScriptLogUpdate "[ Function-Plan Status ]: Another plan is already in progress for the device."
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist"
+						fi
+						
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
+						fi
+						
+						
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
+						fi
+						ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END * * * * * * * * * * * * * * * * * * * * * * *"
+						exit 0
+						
+					elif [[ "$errorReasons" == *"DECLARATIVE_DEVICE_MANAGEMENT_SOFTWARE_UPDATES_NOT_SUPPORTED_FOR_DEVICE_OS_VERSION"* ]]
+					then
+						
+						ScriptLogUpdate "[ Function-Plan Status ]: macOS does not support the function."
+						if /usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" >/dev/null 2>&1; then
+							/usr/libexec/PlistBuddy -c "delete :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist"
+						fi
+						
 						if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
 							/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
 						fi
@@ -1327,6 +1337,9 @@ get_Plan_Status() {
 				else
 					
 					ScriptLogUpdate "[ Function-Plan Status ]: It was terminated without an error code."
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist"
+					fi
 					
 					if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
 						/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
@@ -1350,11 +1363,6 @@ get_Plan_Status() {
 			*)
 				
 				ScriptLogUpdate "[ Function-Plan Status ]: plan was accepted"
-				
-				ScriptLogUpdate "[ Function-Plan Status ]: Enter the date in the plist"
-				
-				/usr/libexec/PlistBuddy -c "add :$BundleID:forceInstallLocalDateTime string $futureUnixTimeDateTime" "$DeferralPlist"
-				/usr/libexec/PlistBuddy -c "add :$BundleID:PlanID string $planID" "$DeferralPlist"
 				
 				ForceInstallDateTime=$(/usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" 2>/dev/null)
 				
@@ -1383,9 +1391,10 @@ get_Plan_Status() {
 					
 					remainingTime_Message=${!remainingDaysTitel}
 				fi
-			
 				
-				if [[ $Language = de* ]]; then
+				
+				if [[ $Language = de* ]]
+				then
 					
 					HumanReadableTime=$(date -jf "%Y-%m-%dT%H:%M:%S" "$ForceInstallDateTime" "+%A dem %d.%m.%Y um %H:%M Uhr")
 					forceInstallLocalDateTime="$HumanReadableTime"
@@ -1394,7 +1403,7 @@ get_Plan_Status() {
 					HumanReadableTime=$(date -jf "%Y-%m-%dT%H:%M:%S" "$ForceInstallDateTime" "+%A on %d.%m.%Y at %H:%M Uhr")
 					forceInstallLocalDateTime="$HumanReadableTime"
 				fi
-
+				
 				
 				Standard_Update_Prompt=`/usr/libexec/PlistBuddy -c "Print :Messanges:StandardUpdatePrompt" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
 				Standard_Update_Prompt="$(echo -e "$Standard_Update_Prompt" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%Install_Button_Custom%/${Install_Button_Custom}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${forceInstallLocalDateTime}/")"
@@ -1422,8 +1431,16 @@ updateCLI_old() {
 		jamfAPIURL="${Jamf_Pro_URL}/api/v1/macos-managed-software-updates/send-updates"
 		
 		response=$(curl -X GET "$Jamf_Pro_URL/JSSResource/computers/udid/$udid" -H "accept: application/xml" -H "Authorization: Bearer ${api_token}")
+		
 		deviceID=$(echo $response | /usr/bin/awk -F'<id>|</id>' '{print $2}')
 		
+		if [[ -z "$deviceID" ]]; then
+			ScriptLogUpdate "[ Function-Update macOS OLD API ]: deviceID konnte nicht ermittelt werden"
+			
+			ScriptLogUpdate "[ Function-Update macOS OLD API ]: MDM command could not be sent."
+			
+			ErrorMessage
+		fi
 		
 		jamfJSON='{ "deviceIds": ["'${deviceID}'"], "applyMajorUpdate": false, "version": "'${macOSSoftwareUpdateVERSION}'", "updateAction": "DOWNLOAD_AND_INSTALL", "forceRestart": true }'
 		
@@ -1789,7 +1806,6 @@ ErrorMessage(){
 # # # # # # # # # # # # # # # # # # # # # # # # # Check for Softwareupdates # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-
 ## Auslesen des aktuellen macOS
 Current_macOS=$(/usr/bin/sw_vers -productVersion)
 macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1) # Erwartete Ausgabe: 10, 11, 12
@@ -1876,6 +1892,10 @@ elif [[ $(echo "$softwareUpdateLIST" | grep -c 'No new software available.') -gt
 		
 		setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
 		
+		if /usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" >/dev/null 2>&1; then
+			/usr/libexec/PlistBuddy -c "delete :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist"
+		fi
+		
 		if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
 			/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
 		fi
@@ -1957,6 +1977,39 @@ else
 			
 			ScriptLogUpdate "[ Functions-Check macOS Updates ]: Check the current update plan"
 			
+			TargetmacOSUpdateVersion=$(/usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" 2>/dev/null)
+			if [[ -n "$TargetmacOSUpdateVersion" && ! "$TargetmacOSUpdateVersion" =~ "Does Not Exist" ]]
+			then
+				ScriptLogUpdate "[ Functions-Check macOS Updates ]: Checking the versions"
+				
+				if [[ "$Current_macOS" == "$TargetmacOSUpdateVersion" || "$Current_macOS" > "$TargetmacOSUpdateVersion" ]]
+				then
+					ScriptLogUpdate "[ Functions-Check macOS Updates ]: macOS update version planned '${TargetmacOSUpdateVersion}'"
+					ScriptLogUpdate "[ Functions-Check macOS Updates ]: The currently installed macOS version is '${macOSSoftwareUpdateVERSION}'"
+					ScriptLogUpdate "[ Functions-Check macOS Updates ]: old plan is available and will be deleted."
+					
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist"
+					fi
+					
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
+					fi
+					
+					if /usr/libexec/PlistBuddy -c "print :$BundleID:PlanID" "$DeferralPlist" >/dev/null 2>&1; then
+						/usr/libexec/PlistBuddy -c "delete :$BundleID:PlanID" "$DeferralPlist"
+					fi
+					
+				else
+					ScriptLogUpdate "[ Functions-Check macOS Updates ]: macOS update version planned '${TargetmacOSUpdateVersion}'"
+					ScriptLogUpdate "[ Functions-Check macOS Updates ]: The currently installed macOS version is '${macOSSoftwareUpdateVERSION}'"
+					ScriptLogUpdate "[ Functions-Check macOS Updates ]: Plan is still active"
+				fi
+				
+			else
+				ScriptLogUpdate "[ Functions-Check macOS Updates ]: No plan found"	
+			fi
+			
 			get_Install_forceDateTime
 			
 			
@@ -1990,6 +2043,11 @@ else
 				
 				setDeferral "$BundleID" "$DeferralType" "$Deferral_Value_Custom" "$DeferralPlist"
 				
+				
+				if /usr/libexec/PlistBuddy -c "print :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist" >/dev/null 2>&1; then
+					/usr/libexec/PlistBuddy -c "delete :$BundleID:TargetmacOSUpdateVersion" "$DeferralPlist"
+				fi
+
 				
 				if /usr/libexec/PlistBuddy -c "print :$BundleID:forceInstallLocalDateTime" "$DeferralPlist" >/dev/null 2>&1; then
 					/usr/libexec/PlistBuddy -c "delete :$BundleID:forceInstallLocalDateTime" "$DeferralPlist"
