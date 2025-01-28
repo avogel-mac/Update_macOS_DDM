@@ -14,7 +14,7 @@ The script offers the following advantages:
 - The size of the window and the font size can be transferred via the configuration profile
   
 Example of the dialog about an available macOS update for non-DDM-capable macOS
-![](https://github.com/avogel-mac/Update_macOS_DDM/blob/main/Pictures/Bildschirmfoto 2025-01-28 um 16.21.40.png?raw=true)
+![](https://github.com/avogel-mac/Update_macOS_DDM/blob/main/Pictures/Bildschirmfoto%202025-01-28%20um%2016.21.40.png?raw=true)
 
 
 Questions, suggestions, or improvement proposals are welcome and appreciated.
