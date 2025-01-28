@@ -7,16 +7,16 @@
       "description": "Default values",
       "type": "object",
       "properties": {
-        "DeferralPlist": {
-          "title": "DeferralPlist",
-          "default": "/Library/Application Support/JAMF/com.custom.deferrals.plist",
-          "description": "Location where the plist is stored so that the values CurrentDeferralValue, ForceInstallDateTime and the PlanID are stored locally on the device.",
-          "type": "string"
-        },
         "DeferralValueCustom": {
-          "title": "Maximum Deferral",
-          "default": "5",
-          "description": "How many days can the user postpone the update. This value is also used to specify the current date plus this value then specifies the date on which the update is forced. ",
+          "title": "Maximum Deferral (non-critical)",
+          "default": 5,
+          "description": "The maximum deferral for non-critical updates",
+          "type": "number"
+        },
+        "DeferralValueCustomCritical": {
+          "title": "Maximum Deferral (critical)",
+          "default": 2,
+          "description": "The maximum deferral for critical updates",
           "type": "number"
         },
         "scriptLog": {
@@ -28,14 +28,34 @@
       }
     },
     "Updates": {
-      "description": "Upgrade macOS major version (e.g. 12.x to 13.x)",
+      "description": "Upgrade macOS version",
       "type": "object",
       "properties": {
-        "MajorUpdateapply": {
-          "title": "Update macOS Major",
-          "default": "false",
-          "description": "Upgrade macOS major version (e.g. 12.x to 13.x)",
-          "type": "string"
+        "macOSupdateSelection": {
+          "title": "macOS update selection",
+          "description": "Select which type of macOS update should be applied.",
+          "type": "string",
+          "default": "LATEST_ANY",
+          "enum": [
+            "LATEST_ANY",
+            "LATEST_MAJOR",
+            "LATEST_MINOR",
+            "SPECIFIC_VERSION"
+          ],
+          "options": {
+            "enum_titles": [
+              "Latest version based on device eligibility",
+              "Latest major version",
+              "Latest minor version",
+              "Specific version"
+            ]
+          }
+        },
+        "macOSspecificVersion": {
+          "title": "Specific macOS version",
+          "description": "Enter the desired version number here (only relevant if ‘Specific version’ has been selected).",
+          "type": "string",
+          "default": ""
         }
       }
     },
@@ -147,25 +167,25 @@
       "properties": {
         "buttontimer_Final_Message": {
           "title": "Timer für Buttons Final Message",
-          "default": "30",
+          "default": 30,
           "description": "How long does it take until the buttons in the 'Final User Info' are activated and the user can click on them so that the user has enough time to read the message. Specified in seconds.",
           "type": "number"
         },
         "buttontimer_pleaseWait_new": {
           "title": "Timer für Buttons Please Wait",
-          "default": "30",
+          "default": 30,
           "description": "How long does it take until the buttons in the 'Please Wait Message' are activated and the user can click them so that the user has enough time to read the message and the message within it? This informs the user that they should please be patient. Specified in seconds.",
           "type": "number"
         },
         "buttontimer_pleaseWait_alt": {
           "title": "Timer für Buttons Please Wait",
-          "default": "30",
+          "default": 30,
           "description": "How long does it take until the buttons in the 'Please Wait Message' are activated and the user can click them so that the user has enough time to read the message and the message within it? This informs the user that they should please be patient. Specified in seconds.",
           "type": "number"
         },
         "buttontimer_ErrorMessage": {
           "title": "Timer für Buttons Error Message",
-          "default": "30",
+          "default": 30,
           "description": "How long does it take until the buttons in the 'Error Message' are activated and the user can click on them so that the user has enough time to read the message and the message within it? This informs the user that something has gone wrong. Specified in seconds.",
           "type": "number"
         }
@@ -177,7 +197,7 @@
       "properties": {
         "MaxMessageTime": {
           "title": "Timeout Meldung",
-          "default": "300",
+          "default": 300,
           "description": "How long the message is displayed to users before it is automatically closed. Specified in seconds.",
           "type": "number"
         },
@@ -199,57 +219,6 @@
         "StandardUpdatePrompt": {
           "title": "Update: Standard message",
           "description": "The message with which the user is informed about the available updates.",
-          "type": "string"
-        },
-        "StandardUpdatePrompt_OLD": {
-          "title": "Update: Standard message( OLD API )",
-          "description": "The message with which the user is informed about the available updates.",
-          "type": "string"
-        },
-        "ForcedUpdatePrompt": {
-          "title": "Update: Last message",
-          "description": "The message when the user has used up their maximum number of postponements.",
-          "type": "string"
-        },
-        "PleaseWaitTitle": {
-          "title": "Please wait: Title",
-          "description": "Heading of the window informing about the started update.",
-          "type": "string"
-        },
-        "PleaseWaitDescription": {
-          "title": "Please wait: Message",
-          "description": "Message informing about the started update.",
-          "type": "string"
-        },
-        "PowerWaitTimer": {
-          "title": "Power: Timeout",
-          "default": "60",
-          "description": "Timeout in seconds, the user has to connect the power supply unit.",
-          "type": "number"
-        },
-        "PowerTitle": {
-          "title": "Power: Titel",
-          "description": "Title of the window that prompts you to connect the power supply unit.",
-          "type": "string"
-        },
-        "PowerDescription": {
-          "title": "Power: Message",
-          "description": "Message prompting to connect the power supply unit.",
-          "type": "string"
-        },
-        "NoPowerDescription": {
-          "title": "Power: Abort message",
-          "description": "Message informing that the power supply unit has been disconnected.",
-          "type": "string"
-        },
-        "ErrorTitle": {
-          "title": "Error: Title",
-          "description": "Heading of the window that informs about an error.",
-          "type": "string"
-        },
-        "ErrorDescription": {
-          "title": "Error: Message",
-          "description": "Message informing about an error.",
           "type": "string"
         }
       }
