@@ -1,6 +1,5 @@
 # macOS Update
 
-## Please note that the Jamf Pro API for DDM softwareupdate is currently in beta.
 
 This script is used to update macOS devices within the period specified by the administrator.
 
