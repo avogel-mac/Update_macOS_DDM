@@ -3,7 +3,7 @@
   "title": "it.next.macOS.update",
   "type": "object",
   "properties": {
-    "Plist_an_Credentials": {
+    "Deferral_and_scriptLog": {
       "description": "Default values",
       "type": "object",
       "properties": {
@@ -21,7 +21,7 @@
         },
         "scriptLog": {
           "title": "scriptLog",
-          "default": "/var/log/de.next.macOS.Update.log",
+          "default": "/var/log/it.next.macOS.Update.log",
           "description": "Where should the script logs be wrote and saved",
           "type": "string"
         }
@@ -63,6 +63,12 @@
       "description": "The Swift dialog window can be adjusted in height, width, heading size and font size. If no values are set via the plist, the values from the script are used.",
       "type": "object",
       "properties": {
+        "BannerImage": {
+          "title": "BannerImage",
+          "default": "",
+          "description": "Path to banner, if you want the window to be displayed with a banner.",
+          "type": "string"
+        },
         "Dialog_update_width": {
           "title": "Dialog_update_width",
           "default": "740",
@@ -86,78 +92,6 @@
           "default": "14",
           "description": "Font size for the text. If not specified, the default value in the script is used.",
           "type": "string"
-        },
-        "Dialog_power_width": {
-          "title": "Dialog_power_width",
-          "default": "740",
-          "description": "Width of the window",
-          "type": "string"
-        },
-        "Dialog_power_height": {
-          "title": "Dialog_power_height",
-          "default": "240",
-          "description": "Height of the window, If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_power_titlefont": {
-          "title": "Dialog_power_titlefont",
-          "default": "20",
-          "description": "Font size for the titel. If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_power_messagefont": {
-          "title": "Dialog_power_messagefont",
-          "default": "14",
-          "description": "Font size for the text. If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_wait_width": {
-          "title": "Dialog_wait_width",
-          "default": "740",
-          "description": "Width of the window",
-          "type": "string"
-        },
-        "Dialog_wait_height": {
-          "title": "Dialog_wait_height",
-          "default": "320",
-          "description": "Height of the window, If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_wait_titlefont": {
-          "title": "Dialog_wait_titlefont",
-          "default": "20",
-          "description": "Font size for the titel. If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_wait_messagefont": {
-          "title": "Dialog_wait_messagefont",
-          "default": "12",
-          "description": "Font size for the text. If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_error_width": {
-          "title": "Dialog_error_width",
-          "default": "600",
-          "description": "Width of the window",
-          "type": "string"
-        },
-        "Dialog_error_height": {
-          "title": "Dialog_error_height",
-          "default": "200",
-          "description": "Height of the window, If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_error_titlefont": {
-          "title": "Dialog_error_titlefont",
-          "default": "20",
-          "description": "Font size for the titel. If not specified, the default value in the script is used.",
-          "type": "string"
-        },
-        "Dialog_error_messagefont": {
-          "title": "Dialog_error_messagefont",
-          "default": "12",
-          "description": "Font size for the text. If not specified, the default value in the script is used.",
-          "type": "string"
         }
       }
     },
@@ -169,24 +103,6 @@
           "title": "Timer für Buttons Final Message",
           "default": 30,
           "description": "How long does it take until the buttons in the 'Final User Info' are activated and the user can click on them so that the user has enough time to read the message. Specified in seconds.",
-          "type": "number"
-        },
-        "buttontimer_pleaseWait_new": {
-          "title": "Timer für Buttons Please Wait",
-          "default": 30,
-          "description": "How long does it take until the buttons in the 'Please Wait Message' are activated and the user can click them so that the user has enough time to read the message and the message within it? This informs the user that they should please be patient. Specified in seconds.",
-          "type": "number"
-        },
-        "buttontimer_pleaseWait_alt": {
-          "title": "Timer für Buttons Please Wait",
-          "default": 30,
-          "description": "How long does it take until the buttons in the 'Please Wait Message' are activated and the user can click them so that the user has enough time to read the message and the message within it? This informs the user that they should please be patient. Specified in seconds.",
-          "type": "number"
-        },
-        "buttontimer_ErrorMessage": {
-          "title": "Timer für Buttons Error Message",
-          "default": 30,
-          "description": "How long does it take until the buttons in the 'Error Message' are activated and the user can click on them so that the user has enough time to read the message and the message within it? This informs the user that something has gone wrong. Specified in seconds.",
           "type": "number"
         }
       }
