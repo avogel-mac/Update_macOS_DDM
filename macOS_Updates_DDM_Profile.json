@@ -56,6 +56,70 @@
           "description": "Enter the desired version number here (only relevant if ‘Specific version’ has been selected).",
           "type": "string",
           "default": ""
+        },
+        "dontRunUpdatesOnDays": {
+          "title": "Don't run updates on days",
+          "description": "Select the days of the week on which updates should NOT be carried out. If it is calculated that the update should start on the day on which it may not be executed, the next possible day is defined.",
+          "type": "object",
+          "properties": {
+            "Monday": {
+              "title": "Monday",
+              "type": "boolean",
+              "default": false
+            },
+            "Tuesday": {
+              "title": "Tuesday",
+              "type": "boolean",
+              "default": false
+            },
+            "Wednesday": {
+              "title": "Wednesday",
+              "type": "boolean",
+              "default": false
+            },
+            "Thursday": {
+              "title": "Thursday",
+              "type": "boolean",
+              "default": false
+            },
+            "Friday": {
+              "title": "Friday",
+              "type": "boolean",
+              "default": false
+            },
+            "Saturday": {
+              "title": "Saturday",
+              "type": "boolean",
+              "default": true
+            },
+            "Sunday": {
+              "title": "Sunday",
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "runUpdatesOnTime": {
+          "title": "Run updates on time",
+          "description": "Enter the time (hour and minute) at which the update is to be carried out. If no time is defined, the update is started at the time at which the plan was created. A specific time can therefore be defined, e.g. 13:00. Please note that the 24-hour system is used here.",
+          "type": "object",
+          "properties": {
+            "hour": {
+              "title": "Hour",
+              "description": "Hour of the day (0-23)",
+              "type": "string",
+              "default": ""
+            },
+            "minute": {
+              "title": "Minute",
+              "description": "Minute of the hour (0-59)",
+              "type": "string",
+              "default": ""
+            }
+          },
+          "required": ["hour", "minute"],
+          "additionalProperties": false
         }
       }
     },
@@ -96,7 +160,7 @@
       }
     },
     "Buttontimer": {
-      "description": "So that the user takes the time to read the message and does not accidentally click the buttons, they are deactivated for a certain time and only reactivated after expiry. This time can be adjusted here for the various windows. Specified in seconds. If no values are set via the profile, the default values are used aim Script.",
+      "description": "So that the user takes the time to read the message and does not accidentally click the buttons, they are deactivated for a certain time and only reactivated after expiry. This time can be adjusted here for the various windows. Specified in seconds. If no values are set via the profile, the default values are used in the Script.",
       "type": "object",
       "properties": {
         "buttontimer_Final_Message": {
@@ -120,22 +184,20 @@
         "InstallButtonLabel": {
           "title": "Button to proceed.",
           "description": "Button to proceed.",
-          "type": "string"
+          "type": "string",
+          "default": "Now"
         },
         "DeferButtonLabel": {
           "title": "Button: Move",
           "description": "Button to move.",
-          "type": "string"
-        },
-        "SupportContact": {
-          "title": "Support Contact",
-          "description": "Who can the user contact if necessary.",
-          "type": "string"
+          "type": "string",
+          "default": "Later"
         },
         "StandardUpdatePrompt": {
           "title": "Update: Standard message",
           "description": "The message with which the user is informed about the available updates.",
-          "type": "string"
+          "type": "string",
+          "default": ""
         }
       }
     }
