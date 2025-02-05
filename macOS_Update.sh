@@ -7,9 +7,9 @@
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="1.0.0.b"
+scriptVersion="1.0.1.b"
 debugMode="${6:-"verbose"}"                                                  # Debug Mode [ verbose (default) | true | false ]
-welcomeIcon="SF=gear.badge"
+Icon="SF=gear.badge"
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 BundleIDPlist="it.next.macOS.update"
@@ -17,6 +17,15 @@ Deferral_Value_Custom=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLo
 DeferralValueCustomCritical=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:DeferralValueCustomCritical" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 Manage_macOSspecificVersion=$(/usr/libexec/PlistBuddy -c "Print :Updates:macOSspecificVersion" "/Library/Managed Preferences/${BundleIDPlist}.plist")
 Manage_macOSupdateSelection=$(/usr/libexec/PlistBuddy -c "Print :Updates:macOSupdateSelection" "/Library/Managed Preferences/${BundleIDPlist}.plist")
+DontRunMonday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Monday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunMonday="false"
+DontRunTuesday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Tuesday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunTuesday="false"
+DontRunWednesday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Wednesday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunWednesday="false"
+DontRunThursday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Thursday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunThursday="false"
+DontRunFriday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Friday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunFriday="false"
+DontRunSaturday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Saturday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunSaturday="false"
+DontRunSunday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Sunday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunSunday="false"
+UpdateHour=$(/usr/libexec/PlistBuddy -c "Print :Updates:runUpdatesOnTime:hour" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null)
+UpdateMinute=$(/usr/libexec/PlistBuddy -c "Print :Updates:runUpdatesOnTime:minute" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Testing | Script  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -484,14 +493,149 @@ function get_local_SoftwareUpdate_plist_data() {
 get_macos_data_Sofa_feed
 get_local_SoftwareUpdate_plist_data
 
-currentUnixTime=$(date +%s)
-if [ "$critical_Update" == "true" ]
-	then
-		futureUnixTime=$((currentUnixTime + (DeferralValueCustomCritical * 86400)))
-	else
-		futureUnixTime=$((currentUnixTime + (Deferral_Value_Custom * 86400)))
+# Check whether both values are either empty or explicitly ‘false’
+if { [ -z "$UpdateHour" ] || [ "$UpdateHour" = "false" ]; } && { [ -z "$UpdateMinute" ] || [ "$UpdateMinute" = "false" ]; }; then
+	ScriptLogUpdate "Both UpdateHour and UpdateMinute are not set or marked as 'false'."
+	ScriptLogUpdate "-> Using the current system time for both values."
+	UpdateHour="false"
+	UpdateMinute="false"
+	ScriptLogUpdate "Current system time: UpdateHour = $UpdateHour, UpdateMinute = $UpdateMinute"
+else
+	# Check whether both values are either empty or explicitly ‘false “If only UpdateHour is missing or ”false’, the current hour value is adopted.
+	if [ -z "$UpdateHour" ] || [ "$UpdateHour" = "false" ]; then
+		ScriptLogUpdate "UpdateHour is not set or marked as 'false'."
+		ScriptLogUpdate "-> Using the current system hour."
+		UpdateHour=$(date +%H)
+		ScriptLogUpdate "New UpdateHour: $UpdateHour"
+	fi
+	# If only UpdateMinute is missing or ‘false’, the current minute value is adopted.
+	if [ -z "$UpdateMinute" ] || [ "$UpdateMinute" = "false" ]; then
+		ScriptLogUpdate "UpdateMinute is not set or marked as 'false'."
+		ScriptLogUpdate "-> Using the current system minute."
+		UpdateMinute=$(date +%M)
+		ScriptLogUpdate "New UpdateMinute: $UpdateMinute"
+	fi
+	ScriptLogUpdate "Time set by the administrator (or partially overridden)."
+	ScriptLogUpdate "-> Updates will be executed at: ${UpdateHour}:${UpdateMinute}"
 fi
-futureUnixTimeDateTime=$(/bin/date -j -f "%s" "$futureUnixTime" "+%Y-%m-%dT%H:%M:%S")
+
+
+currentUnixTime=$(date +%s)
+
+# 1. Calculate the base deferral days (as provided by the administrator)
+if [ "$critical_Update" == "true" ]
+then
+	deferral_days=$DeferralValueCustomCritical
+else
+	deferral_days=$Deferral_Value_Custom
+fi
+
+
+if [ "$UpdateHour" != "false" ] && [ -n "$UpdateHour" ] && [ "$UpdateMinute" != "false" ] && [ -n "$UpdateMinute" ]
+then
+	base_date=$(date -j -v+${deferral_days}d "+%Y-%m-%d")
+	target_datetime_str="${base_date}T$(printf "%02d" $UpdateHour):$(printf "%02d" $UpdateMinute):00"
+	targetUnixTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$target_datetime_str" "+%s")
+else
+	targetUnixTime=$(( currentUnixTime + deferral_days * 86400 ))
+fi
+
+# 3. Determine the day of the week of the base timestamp (1 = Monday, ... , 7 = Sunday)
+target_day=$(date -j -f "%s" "$targetUnixTime" "+%u")
+
+# Function: Checks if updates are allowed on a given day (number 1 to 7)
+is_day_allowed() {
+	daynum=$1
+	case $daynum in
+		1) flag=$DontRunMonday ;;
+		2) flag=$DontRunTuesday ;;
+		3) flag=$DontRunWednesday ;;
+		4) flag=$DontRunThursday ;;
+		5) flag=$DontRunFriday ;;
+		6) flag=$DontRunSaturday ;;
+		7) flag=$DontRunSunday ;;
+		*) flag="false" ;;
+	esac
+	if [ "$flag" = "true" ]; then
+		return 1   # Day NOT allowed
+	else
+		return 0   # Day allowed
+	fi
+}
+
+# 4. Check if the base timestamp is allowed.
+if is_day_allowed "$target_day"
+then
+	finalUnixTime=$targetUnixTime
+else
+	initialDayName=$(/bin/date -j -f "%s" "$targetUnixTime" "+%A")
+	ScriptLogUpdate "Determined day of the week is ${initialDayName}. Updates are not allowed on this day. Finding the next available day."
+	
+	# Option A: Forward adjustment (search for the next allowed day in the future)
+	ScriptLogUpdate "Determining forward option..."
+	forwardUnixTime=$targetUnixTime
+	while true; do
+		forwardUnixTime=$(( forwardUnixTime + 86400 ))
+		forward_day=$(date -j -f "%s" "$forwardUnixTime" "+%u")
+		if is_day_allowed "$forward_day"; then
+			break
+		fi
+	done
+	forwardDayName=$(/bin/date -j -f "%s" "$forwardUnixTime" "+%A")
+	ScriptLogUpdate "Forward option: Next allowed day is ${forwardDayName} on $(/bin/date -j -f "%s" "$forwardUnixTime" "+%Y-%m-%dT%H:%M:%S")"
+	
+	# Option B: Backward adjustment (search for the next allowed day in the past)
+	ScriptLogUpdate "Determining backward option..."
+	backwardUnixTime=$targetUnixTime
+	while true; do
+		candidate=$(( backwardUnixTime - 86400 ))
+		if [ $candidate -le $currentUnixTime ]; then
+			backwardUnixTime=0
+			break
+		fi
+		backwardUnixTime=$candidate
+		backward_day=$(date -j -f "%s" "$backwardUnixTime" "+%u")
+		if is_day_allowed "$backward_day"; then
+			break
+		fi
+	done
+	
+	if [ $backwardUnixTime -gt 0 ]
+	then
+		backwardDayName=$(/bin/date -j -f "%s" "$backwardUnixTime" "+%A")
+		ScriptLogUpdate "Backward option: Next allowed day is ${backwardDayName} on $(/bin/date -j -f "%s" "$backwardUnixTime" "+%Y-%m-%dT%H:%M:%S")"
+	else
+		ScriptLogUpdate "No valid backward option found."
+	fi
+	
+	# 5. Compare both options:
+	forward_diff=$(( forwardUnixTime - currentUnixTime ))
+	backward_diff=$(( backwardUnixTime - currentUnixTime ))
+	
+	# Minimum allowed time according to the granted deferrals (in seconds)
+	minAllowed=$(( deferral_days * 86400 ))
+	
+	# If the backward candidate does not reach the minimum deferral:
+	if [ $backward_diff -lt $minAllowed ]
+	then
+		diff_undershoot=$(( (minAllowed - backward_diff) / 86400 ))
+		diff_overshoot=$(( (forward_diff - minAllowed) / 86400 ))
+		ScriptLogUpdate "In the backward option check, the granted deferral period ($deferral_days) is undershot by ${diff_undershoot} day(s)."
+		ScriptLogUpdate "Therefore, the next available day is chosen. This exceeds the granted deferral period by ${diff_overshoot} day(s)."
+		finalUnixTime=$forwardUnixTime
+	else
+		# Otherwise, choose the option that is closer to the current time.
+		if [ $backward_diff -le $forward_diff ]
+		then
+			finalUnixTime=$backwardUnixTime
+		else
+			finalUnixTime=$forwardUnixTime
+		fi
+	fi
+fi
+
+futureUnixTimeDateTime=$(/bin/date -j -f "%s" "$finalUnixTime" "+%Y-%m-%dT%H:%M:%S")
+ScriptLogUpdate "Scheduled update time: $futureUnixTimeDateTime"
 
 case "$Manage_macOSupdateSelection" in
 	"SPECIFIC_VERSION")
@@ -507,10 +651,19 @@ case "$Manage_macOSupdateSelection" in
 			versionType="LATEST_ANY"
 			specificVersion="NO_SPECIFIC_VERSION"
 			latest_updateVersion="$latest_upgradeVersion_local_plist"
+			# (Hinweis: Die Zeile unten scheint redundant zu sein – ggf. entfernen)
 			latest_updateVersion="$latest_updateVersion_local_plist"
 		else
 			ScriptLogUpdate "[ Function-Check macOS ]: No updates available."
-			exit 0
+			case "$debugMode" in
+				true|verbose)
+					ScriptLogUpdate "[ Function-Check macOS ]: Debug mode active, continuing script without exit."
+					latest_updateVersion="Debug"
+				;;
+				false|*)
+					exit 0
+				;;
+			esac
 		fi
 	;;
 	
@@ -523,7 +676,15 @@ case "$Manage_macOSupdateSelection" in
 			latest_updateVersion="$latest_upgradeVersion_local_plist"
 		else
 			echo "Kein Upgrade für das Gerät verfügbar."
-			exit 0
+			case "$debugMode" in
+				true|verbose)
+					ScriptLogUpdate "[ Function-Check macOS ]: Debug mode active, continuing script without exit."
+					latest_updateVersion="Debug"
+				;;
+				false|*)
+					exit 0
+				;;
+			esac
 		fi
 	;;
 	
@@ -536,16 +697,24 @@ case "$Manage_macOSupdateSelection" in
 			latest_updateVersion="$latest_updateVersion_local_plist"
 		else
 			ScriptLogUpdate "[ Function-Check macOS ]: No update available for the device."
-			exit 0
+			case "$debugMode" in
+				true|verbose)
+					ScriptLogUpdate "[ Function-Check macOS ]: Debug mode active, continuing script without exit."
+					latest_updateVersion="Debug"
+				;;
+				false|*)
+					exit 0
+				;;
+			esac
 		fi
 	;;
 	
 	*)
-		
 		ScriptLogUpdate "[ Function-Check macOS ]: Invalid value for Manage_macOSupdateSelection: $Manage_macOSupdateSelection"
 		exit 1
 	;;
 esac
+
 
 case ${debugMode} in
 	"true"      ) scriptVersion="DEBUG MODE | Dialog: v${dialogVersion} • DDM macOS Updates: v${scriptVersion}" ;;
@@ -1022,8 +1191,6 @@ function get_Device_Informations_from_Jamf() {
 function create_DDM_Update_Plan() {
 	refresh_api_token 
 	
-	
-	
 	jamfJSON='{
 				"devices": [
 					{
@@ -1039,6 +1206,13 @@ function create_DDM_Update_Plan() {
 				}
 			}'
 	
+	if [[ "${debugMode}" == "true" ]] || [[ "${debugMode}" == "verbose" ]]; then
+		ScriptLogUpdate "[ Function- create_DDM_Update_Plan debugMode ]: The following update plan is created with the following settings"
+		
+		echo "$jamfJSON"
+	fi
+	
+	
 	create_new_Update_Plan=$(curl --header "Authorization: Bearer ${api_token}" --header "Content-Type: application/json" --write-out "%{http_code}" --silent --show-error --request POST --url "${Jamf_Pro_URL}/api/v1/managed-software-updates/plans" --data "${jamfJSON}")
 	
 	if [[ $(echo "$create_new_Update_Plan" | grep -c '200') -gt 0 ]] || [[ $(echo "$create_new_Update_Plan" | grep -c '201') -gt 0 ]]
@@ -1049,9 +1223,9 @@ function create_DDM_Update_Plan() {
 		if [[ ! -z "$planID" ]]
 		then
 			ScriptLogUpdate "[ Function-Create Plan ]: Plan ID: $planID"
-			ScriptLogUpdate "[ Function-Create Plan ]: warte, bis der Plan Zeit hatte auf dem Computer anzukommen und verarbeitet worden ist."
+			ScriptLogUpdate "[ Function-Create Plan ]: wait until the plan has had time to arrive on the computer and has been processed."
 			
-			echo "Warte für 300 Sekunden (5 Minuten) und prüfe anschliessend den Status des Plans"
+			ScriptLogUpdate "Wait for 300 seconds (5 minutes) and then check the status of the plan"
 			
 			sleep 300
 			
@@ -1073,27 +1247,27 @@ function create_DDM_Update_Plan() {
 				Hymand_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$forceInstallLocalDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
 				if [[ -n "$Hymand_read_forceInstallLocalDateTime" ]]
 				then
-					echo "Umgewandelte Zeit: $Hymand_read_forceInstallLocalDateTime"
+					ScriptLogUpdate "Umgewandelte Zeit: $Hymand_read_forceInstallLocalDateTime"
 					existing_active_plan="true"
 				else
-					echo "Fehler bei der Umwandlung von forceInstallLocalDateTime: $forceInstallLocalDateTime"
+					ScriptLogUpdate "Error during the conversion of forceInstallLocalDateTime: $forceInstallLocalDateTime"
 					exit 1
 				fi
 			else
-				echo "forceInstallLocalDateTime nicht gefunden oder leer."
+				ScriptLogUpdate "forceInstallLocalDateTime not found or empty."
 				exit 1
 			fi
 			
 			
 		else
-			echo "[ Function-Create Plan ]: Error when extracting the plan ID."
+			ScriptLogUpdate "[ Function-Create Plan ]: Error when extracting the plan ID."
 			exit 1
 		fi
 	else
-		echo ""$create_new_Update_Plan""
-		echo "[ Function-Create Plan ]: Command could not be sent."
+		ScriptLogUpdate ""$create_new_Update_Plan""
+		ScriptLogUpdate "[ Function-Create Plan ]: Command could not be sent."
 		delete_api_token
-		echo "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 		
 		exit 1
 	fi
@@ -1105,12 +1279,12 @@ function get_all_Plans_information_for_Device() {
 	existingPlansResponse=$(curl -s -H "Authorization: Bearer $api_token" "$Jamf_Pro_URL/api/v1/managed-software-updates/plans?filter=device.deviceId==$deviceID")
 	
 	if [ $? -ne 0 ]; then
-		echo "Fehler beim Senden der API-Anfrage."
+		ScriptLogUpdate "Error sending the API request."
 		exit 1
 	fi
 	
 	if [[ ! "$existingPlansResponse" =~ ^\{.*\}$ ]]; then
-		echo "Ungültige JSON-Antwort erhalten."
+		ScriptLogUpdate "Invalid JSON response received."
 		exit 1
 	fi
 	
@@ -1118,7 +1292,7 @@ function get_all_Plans_information_for_Device() {
 	
 	if [ "$planCount" -eq 0 ]
 	then
-		echo "Keine Update-Pläne für deviceId $deviceID gefunden."
+		ScriptLogUpdate "No update plans found for deviceId $deviceID."
 		create_DDM_Update_Plan
 	else
 		planUUIDs=$(echo "$existingPlansResponse" | grep -o '"planUuid"[[:space:]]*:[[:space:]]*"[a-f0-9\-]*"' | awk -F'"' '{print $4}')
@@ -1152,20 +1326,20 @@ function get_all_Plans_information_for_Device() {
 			
 			if [[ $plan_count -gt 1 ]]
 			then
-				echo "Die folgenden Pläne sind aktiv:"
+				ScriptLogUpdate "The following plans are active:"
 				for active_uuid in $active_plans; do
 					echo "  - $active_uuid"
 				done
-				echo "Es kann nur einen aktiven Plan geben."
-				echo "Bitte überprüfe die get_status_description Funktion."
+				ScriptLogUpdate "There can only be one active plan."
+				ScriptLogUpdate "Please check the get_status_description function."
 				exit 1
 				
 			else
 				for active_uuid in $active_plans; do
-					echo "Der folgende Plan ist aktiv: $active_uuid"
+					ScriptLogUpdate "The following plan is active: $active_uuid"
 				done
 				
-				echo "Prüfe Details für den aktiven Plan"
+				ScriptLogUpdate "Check details for the active plan"
 				active_planDetails=$(curl -s -H "Authorization: Bearer $api_token" "$Jamf_Pro_URL/api/v1/managed-software-updates/plans/$active_uuid")
 				active_forceInstallLocalDateTime=$(extract_json_value "$active_planDetails" "forceInstallLocalDateTime")
 				
@@ -1188,14 +1362,14 @@ function get_all_Plans_information_for_Device() {
 						echo "versionType: $versionType"
 						echo "specificVersion: $specificVersion"
 						echo "forceInstallLocalDateTime: $forceInstallLocalDateTime"
-						echo "Umgewandelte Zeit: $Hymand_read_forceInstallLocalDateTime"
+						echo "Transformed time: $Hymand_read_forceInstallLocalDateTime"
 						echo "state: $state"
-						echo "Status-Beschreibung: $status_description"
+						echo "Status description: $status_description"
 						echo "----------------------------------------"
 						
 						if [[ -n "$errorReasons" ]]; then
 							for error in $errorReasons; do
-								echo "  - Fehler: $error"
+								echo "  - EROR: $error"
 								echo "    Beschreibung: $(get_error_description "$error")"
 							done
 							echo
@@ -1203,16 +1377,16 @@ function get_all_Plans_information_for_Device() {
 						
 						existing_active_plan="true"
 					else
-						echo "Fehler bei der Umwandlung von forceInstallLocalDateTime: $active_forceInstallLocalDateTime"
+						echo "Error during the conversion of forceInstallLocalDateTime: $active_forceInstallLocalDateTime"
 						exit 1
 					fi
 				else
-					echo "forceInstallLocalDateTime nicht gefunden oder leer."
+					echo "forceInstallLocalDateTime not found or empty."
 					exit 1
 				fi
 			fi
 		else
-			ScriptLogUpdate "[ Function-Check macOS ]: Keinen aktiven Plan gefunden."
+			ScriptLogUpdate "[ Function-Check macOS ]: No active plan found."
 			create_DDM_Update_Plan
 		fi
 	fi
@@ -1222,22 +1396,158 @@ if [[ "${debugMode}" == "true" ]] || [[ "${debugMode}" == "verbose" ]]
 		if [[ -n "$jamf_api_client" && -n "$jamf_api_secret" ]]
 			then
 				
-				ScriptLogUpdate "[ Function-Check macOS debugMode ]: Credentials vorhanden."
+				ScriptLogUpdate "[ Function-Check macOS debugMode ]: Credentials available."
 				get_Device_Informations_from_Jamf
 				get_all_Plans_information_for_Device
 				
 			else
 				
-				ScriptLogUpdate "[ Function-Check macOS debugMode ]: Keine credentials vorhanden."
+				ScriptLogUpdate "[ Function-Check macOS debugMode ]: No credentials available."
 				critical_Update="false"
-				currentUnixTime=$(date +%s)
-				if [ "$critical_Update" == "true" ]
-				then
-					futureUnixTime=$((currentUnixTime + (DeferralValueCustomCritical * 86400)))
-				else
-					futureUnixTime=$((currentUnixTime + (Deferral_Value_Custom * 86400)))
+				
+			# Check whether both values are either empty or explicitly ‘false’
+			if { [ -z "$UpdateHour" ] || [ "$UpdateHour" = "false" ]; } && { [ -z "$UpdateMinute" ] || [ "$UpdateMinute" = "false" ]; }; then
+				ScriptLogUpdate "Both UpdateHour and UpdateMinute are not set or marked as 'false'."
+				ScriptLogUpdate "-> Using the current system time for both values."
+				UpdateHour="false"
+				UpdateMinute="false"
+				ScriptLogUpdate "Current system time: UpdateHour = $UpdateHour, UpdateMinute = $UpdateMinute"
+			else
+				# Check whether both values are either empty or explicitly ‘false “If only UpdateHour is missing or ”false’, the current hour value is adopted.
+				if [ -z "$UpdateHour" ] || [ "$UpdateHour" = "false" ]; then
+					ScriptLogUpdate "UpdateHour is not set or marked as 'false'."
+					ScriptLogUpdate "-> Using the current system hour."
+					UpdateHour=$(date +%H)
+					ScriptLogUpdate "New UpdateHour: $UpdateHour"
 				fi
-				futureUnixTimeDateTime=$(/bin/date -j -f "%s" "$futureUnixTime" "+%Y-%m-%dT%H:%M:%S")
+				# If only UpdateMinute is missing or ‘false’, the current minute value is adopted.
+				if [ -z "$UpdateMinute" ] || [ "$UpdateMinute" = "false" ]; then
+					ScriptLogUpdate "UpdateMinute is not set or marked as 'false'."
+					ScriptLogUpdate "-> Using the current system minute."
+					UpdateMinute=$(date +%M)
+					ScriptLogUpdate "New UpdateMinute: $UpdateMinute"
+				fi
+				ScriptLogUpdate "Time set by the administrator (or partially overridden)."
+				ScriptLogUpdate "-> Updates will be executed at: ${UpdateHour}:${UpdateMinute}"
+			fi
+			
+			
+			currentUnixTime=$(date +%s)
+			
+			# 1. Calculate the base deferral days (as provided by the administrator)
+			if [ "$critical_Update" == "true" ]
+			then
+				deferral_days=$DeferralValueCustomCritical
+			else
+				deferral_days=$Deferral_Value_Custom
+			fi
+			
+			
+			if [ "$UpdateHour" != "false" ] && [ -n "$UpdateHour" ] && [ "$UpdateMinute" != "false" ] && [ -n "$UpdateMinute" ]
+			then
+				base_date=$(date -j -v+${deferral_days}d "+%Y-%m-%d")
+				target_datetime_str="${base_date}T$(printf "%02d" $UpdateHour):$(printf "%02d" $UpdateMinute):00"
+				targetUnixTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$target_datetime_str" "+%s")
+			else
+				targetUnixTime=$(( currentUnixTime + deferral_days * 86400 ))
+			fi
+			
+			# 3. Determine the day of the week of the base timestamp (1 = Monday, ... , 7 = Sunday)
+			target_day=$(date -j -f "%s" "$targetUnixTime" "+%u")
+			
+			# Function: Checks if updates are allowed on a given day (number 1 to 7)
+			is_day_allowed() {
+				daynum=$1
+				case $daynum in
+					1) flag=$DontRunMonday ;;
+					2) flag=$DontRunTuesday ;;
+					3) flag=$DontRunWednesday ;;
+					4) flag=$DontRunThursday ;;
+					5) flag=$DontRunFriday ;;
+					6) flag=$DontRunSaturday ;;
+					7) flag=$DontRunSunday ;;
+					*) flag="false" ;;
+				esac
+				if [ "$flag" = "true" ]; then
+					return 1   # Day NOT allowed
+				else
+					return 0   # Day allowed
+				fi
+			}
+			
+			# 4. Check if the base timestamp is allowed.
+			if is_day_allowed "$target_day"
+			then
+				finalUnixTime=$targetUnixTime
+			else
+				initialDayName=$(/bin/date -j -f "%s" "$targetUnixTime" "+%A")
+				ScriptLogUpdate "Determined day of the week is ${initialDayName}. Updates are not allowed on this day. Finding the next available day."
+				
+				# Option A: Forward adjustment (search for the next allowed day in the future)
+				ScriptLogUpdate "Determining forward option..."
+				forwardUnixTime=$targetUnixTime
+				while true; do
+					forwardUnixTime=$(( forwardUnixTime + 86400 ))
+					forward_day=$(date -j -f "%s" "$forwardUnixTime" "+%u")
+					if is_day_allowed "$forward_day"; then
+						break
+					fi
+				done
+				forwardDayName=$(/bin/date -j -f "%s" "$forwardUnixTime" "+%A")
+				ScriptLogUpdate "Forward option: Next allowed day is ${forwardDayName} on $(/bin/date -j -f "%s" "$forwardUnixTime" "+%Y-%m-%dT%H:%M:%S")"
+				
+				# Option B: Backward adjustment (search for the next allowed day in the past)
+				ScriptLogUpdate "Determining backward option..."
+				backwardUnixTime=$targetUnixTime
+				while true; do
+					candidate=$(( backwardUnixTime - 86400 ))
+					if [ $candidate -le $currentUnixTime ]; then
+						backwardUnixTime=0
+						break
+					fi
+					backwardUnixTime=$candidate
+					backward_day=$(date -j -f "%s" "$backwardUnixTime" "+%u")
+					if is_day_allowed "$backward_day"; then
+						break
+					fi
+				done
+				
+				if [ $backwardUnixTime -gt 0 ]
+				then
+					backwardDayName=$(/bin/date -j -f "%s" "$backwardUnixTime" "+%A")
+					ScriptLogUpdate "Backward option: Next allowed day is ${backwardDayName} on $(/bin/date -j -f "%s" "$backwardUnixTime" "+%Y-%m-%dT%H:%M:%S")"
+				else
+					ScriptLogUpdate "No valid backward option found."
+				fi
+				
+				# 5. Compare both options:
+				forward_diff=$(( forwardUnixTime - currentUnixTime ))
+				backward_diff=$(( backwardUnixTime - currentUnixTime ))
+				
+				# Minimum allowed time according to the granted deferrals (in seconds)
+				minAllowed=$(( deferral_days * 86400 ))
+				
+				# If the backward candidate does not reach the minimum deferral:
+				if [ $backward_diff -lt $minAllowed ]
+				then
+					diff_undershoot=$(( (minAllowed - backward_diff) / 86400 ))
+					diff_overshoot=$(( (forward_diff - minAllowed) / 86400 ))
+					ScriptLogUpdate "In the backward option check, the granted deferral period ($deferral_days) is undershot by ${diff_undershoot} day(s)."
+					ScriptLogUpdate "Therefore, the next available day is chosen. This exceeds the granted deferral period by ${diff_overshoot} day(s)."
+					finalUnixTime=$forwardUnixTime
+				else
+					# Otherwise, choose the option that is closer to the current time.
+					if [ $backward_diff -le $forward_diff ]
+					then
+						finalUnixTime=$backwardUnixTime
+					else
+						finalUnixTime=$forwardUnixTime
+					fi
+				fi
+			fi
+			
+			futureUnixTimeDateTime=$(/bin/date -j -f "%s" "$finalUnixTime" "+%Y-%m-%dT%H:%M:%S")
+			ScriptLogUpdate "Scheduled update time: $futureUnixTimeDateTime"
 			
 				Hymand_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$futureUnixTimeDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
 		fi
@@ -1258,7 +1568,6 @@ buttontimer_Final_Message_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontime
 Install_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:InstallButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Install_Button_Custom="NOW"
 Defer_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:DeferButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Defer_Button_Custom="LATER"
 Defer_Button_Custom=$(echo -e "$Defer_Button_Custom")
-Support_Contact_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:SupportContact" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Support_Contact_Custom="IT"
 
 # * * * * * * * * * * * * * * * * * * * * * * * * SwiftDialog Window  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 Dialog_update_width=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_width" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Dialog_update_width="740"
@@ -1325,7 +1634,7 @@ Promt_Dialog_to_User="$dialog_bin \
 --height $Dialog_update_height \
 --title \"macOS Softwareupdate\" \
 --message \"$Standard_Update_Prompt\" \
---icon \"$welcomeIcon\" \
+--icon \"$Icon\" \
 --iconsize 128 \
 --button1text \"$Install_Button_Custom in $buttontimer\" \
 --button1disabled \
