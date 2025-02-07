@@ -1,13 +1,13 @@
 #!/bin/bash
 #############################################################################
-# Shellscript			:	Create DDM Softwareupdate Plan
+# Shellscript		:	Create DDM Softwareupdate Plan
 # Author			:	Andreas Vogel, NEXT Enterprise GmbH
-# Info				:	Script only works with macOS Big Sur (14) and higher
+# Info				:	Script only works with macOS Sonoma (14) and higher
 #############################################################################
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="1.0.1.b"
+scriptVersion="1.0.2.b"
 debugMode="${6:-"verbose"}"                                                  # Debug Mode [ verbose (default) | true | false ]
 Icon="SF=gear.badge"
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -72,6 +72,13 @@ macOSMAJOR=$(sw_vers -productVersion | cut -d'.' -f1)
 macOSMINOR=$(sw_vers -productVersion | cut -d'.' -f2)
 
 model=$(/usr/sbin/sysctl -n hw.model)
+
+if [[ "$model" == VirtualMac* ]]; then
+	ScriptLogUpdate "[ Function-Check Model ]: recognised model $model Virtual devices, are not recognised in the sofa feed"
+	model="MacBookPro18,3"
+	ScriptLogUpdate "[ Function-Check Model ]: Change this to $model so that the script is not terminated."
+fi
+
 case "$macOSMAJOR" in
 	15*)
 		macOS_Name="Sequoia $macOSMAJOR"      # Sequoia 15
@@ -639,8 +646,8 @@ ScriptLogUpdate "Scheduled update time: $futureUnixTimeDateTime"
 
 case "$Manage_macOSupdateSelection" in
 	"SPECIFIC_VERSION")
-		versionType="SPECIFIC_VERSION"
-		specificVersion="$Manage_macOSspecificVersion"
+		planversionType="SPECIFIC_VERSION"
+		planspecificVersion="$Manage_macOSspecificVersion"
 		latest_updateVersion="$Manage_macOSspecificVersion"
 	;;
 	
@@ -648,10 +655,9 @@ case "$Manage_macOSupdateSelection" in
 		if [[ "$latest_upgradeAvailable_local_plist" == "true" || "$latest_updateAvailable_local_plist" == "true" ]]; then
 			ScriptLogUpdate "[ Function-Check macOS ]: Update available."
 			
-			versionType="LATEST_ANY"
-			specificVersion="NO_SPECIFIC_VERSION"
+			planversionType="LATEST_ANY"
+			planspecificVersion="NO_SPECIFIC_VERSION"
 			latest_updateVersion="$latest_upgradeVersion_local_plist"
-			# (Hinweis: Die Zeile unten scheint redundant zu sein – ggf. entfernen)
 			latest_updateVersion="$latest_updateVersion_local_plist"
 		else
 			ScriptLogUpdate "[ Function-Check macOS ]: No updates available."
@@ -671,8 +677,8 @@ case "$Manage_macOSupdateSelection" in
 		if [[ "$latest_upgradeAvailable_local_plist" == "true" ]]; then
 			ScriptLogUpdate "[ Function-Check macOS ]: Upgrade available."
 			
-			versionType="LATEST_MAJOR"
-			specificVersion="NO_SPECIFIC_VERSION"
+			planversionType="LATEST_MAJOR"
+			planspecificVersion="NO_SPECIFIC_VERSION"
 			latest_updateVersion="$latest_upgradeVersion_local_plist"
 		else
 			echo "Kein Upgrade für das Gerät verfügbar."
@@ -692,8 +698,8 @@ case "$Manage_macOSupdateSelection" in
 		if [[ "$latest_updateAvailable_local_plist" == "true" ]]; then
 			ScriptLogUpdate "[ Function-Check macOS ]: Update available."
 			
-			versionType="LATEST_MINOR"
-			specificVersion="NO_SPECIFIC_VERSION"
+			planversionType="LATEST_MINOR"
+			planspecificVersion="NO_SPECIFIC_VERSION"
 			latest_updateVersion="$latest_updateVersion_local_plist"
 		else
 			ScriptLogUpdate "[ Function-Check macOS ]: No update available for the device."
@@ -1200,8 +1206,8 @@ function create_DDM_Update_Plan() {
 				],
 				"config": {
 					"updateAction": "DOWNLOAD_INSTALL_SCHEDULE",
-					"versionType": "'${versionType}'",
-					"specificVersion": "'${specificVersion}'",
+					"versionType": "'${planversionType}'",
+					"specificVersion": "'${planspecificVersion}'",
 					"forceInstallLocalDateTime": "'${futureUnixTimeDateTime}'"
 				}
 			}'
@@ -1611,6 +1617,7 @@ remainingHourseTitel=remainingHourseTitel_${UserLanguage}
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Create default Dialog Arguments # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 buttontimer=$buttontimer_Final_Message_Custom
 case ${debugMode} in
 	"false"     ) dialog_bin="${dialog_bin}" ;;
