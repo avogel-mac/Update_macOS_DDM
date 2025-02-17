@@ -4,12 +4,14 @@
 # Author			:	Andreas Vogel, NEXT Enterprise GmbH
 # Info				:	Script only works with macOS Sonoma (14) and higher
 #############################################################################
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jamf/bin/
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="1.0.2.b"
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
+scriptVersion="1.0.3.b"
 debugMode="${6:-"verbose"}"                                                  # Debug Mode [ verbose (default) | true | false ]
-Icon="SF=gear.badge"
+
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 BundleIDPlist="it.next.macOS.update"
@@ -30,6 +32,63 @@ UpdateMinute=$(/usr/libexec/PlistBuddy -c "Print :Updates:runUpdatesOnTime:minut
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Testing | Script  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+function killProcess() {
+	process="$1"
+	if process_pid=$( pgrep -a "${process}" 2>/dev/null ) ; then
+		echo "Attempting to terminate the '$process' process …"
+		echo "(Termination message indicates success.)"
+		kill "$process_pid" 2> /dev/null
+		if pgrep -a "$process" >/dev/null ; then
+			error "'$process' could not be terminated."
+		fi
+	else
+		echo "The '$process' process isn't running."
+	fi
+}
+
+# Check whether a user is at the computer and the device is not locked by the screensaver. 
+# A maximum of 10 times a sleep of 30 seconds is entered before the script continues so that 
+# the Jamf process is not held up too long (thanks, @mrmte)
+function waitForActiveUser() {
+	local KEEP_LOOPING="true"
+	local SLEEP_TIME=30
+	local IDLE_TIME=0
+	local CONSOLE_USER=""
+	local SLEEP_COUNT=0
+	
+	while [ "$KEEP_LOOPING" = "true" ]; do
+		if [ "$SLEEP_COUNT" -ge 10 ]; then
+			ScriptLogUpdate "Maximum of 10 sleep iterations reached. Exiting waitForActiveUser."
+			break
+		fi
+		
+		CONSOLE_USER=`ls -l /dev/console | cut -d " " -f4 | grep -v "^_" | grep -iwv "daemon" | grep -iwv "^nobody" | grep -iwv "^root" | grep -iwv "mbsetup"`
+		LOGINWINDOW_PROC=`ps aux | grep -v grep | grep -ci loginwindow`
+		
+		if [ "$CONSOLE_USER" ] && [ $LOGINWINDOW_PROC -gt 0 ]
+			then
+				ScriptLogUpdate "$CONSOLE_USER is logged in and loginwindow process is running."
+				ps aux | grep [S]creenSaverEngine > /dev/null
+				if [ "$?" = "0" ]
+					then
+						ScriptLogUpdate "Screen Saver is active, waiting $SLEEP_TIME seconds"
+						sleep $SLEEP_TIME
+						SLEEP_COUNT=$((SLEEP_COUNT + 1))
+					else
+						IDLE_TIME=`ioreg -c IOHIDSystem | awk '/HIDIdleTime/ {print int($NF/1000000000)}'`
+						ScriptLogUpdate "Looks like the Mac is active, idle time is: $IDLE_TIME"
+						KEEP_LOOPING="false"
+				fi
+			else
+				ScriptLogUpdate "No logged in user, waiting $SLEEP_TIME seconds"
+				sleep $SLEEP_TIME
+				SLEEP_COUNT=$((SLEEP_COUNT + 1))
+		fi
+	done
+	return 0
+}
+
+
 scriptLog=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:scriptLog" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>"/dev/null")
 if [[ -z "$scriptLog" ]]; then 
 	scriptLog="/var/log/it.next.macOS.Update.log"
@@ -60,10 +119,52 @@ function ScriptLogUpdate() {
 }
 
 ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * START LOG * * * * * * * * * * * * * * * * * * * * * * *"
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # Setzen der Inizialen Variablen  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # Pre-flight Check  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-currentUser="$(stat -f%Su /dev/console)"
+
+# Confirm script is running as root
+if [[ $(id -u) -ne 0 ]]; then
+	ScriptLogUpdate "This script must be run as root; exiting."
+	killProcess "caffeinate"
+	exit 1
+fi
+
+# Validate Setup Assistant has completed
+while pgrep -q -x "Setup Assistant"; do
+	ScriptLogUpdate "Setup Assistant is still running; pausing for 2 seconds"
+	sleep 2
+done
+
+ScriptLogUpdate "Setup Assistant is no longer running; proceeding …"
+
+# Confirm Dock is running / user is at Desktop
+until pgrep -q -x "Finder" && pgrep -q -x "Dock"; do
+	ScriptLogUpdate "Finder & Dock are NOT running; pausing for 1 second"
+	sleep 1
+done
+
+ScriptLogUpdate "Finder & Dock are running; proceeding …"
+
+# Validate Logged-in System Accounts
+ScriptLogUpdate "Check for Logged-in System Accounts …"
+
+counter="1"
+
+until { [[ "${currentUser}" != "_mbsetupuser" ]] || [[ "${counter}" -gt "180" ]]; } && { [[ "${currentUser}" != "loginwindow" ]] || [[ "${counter}" -gt "30" ]]; } ; do
+	
+	ScriptLogUpdate "Logged-in User Counter: ${counter}"
+	currentcurrentUser
+	sleep 2
+	((counter++))
+	
+done
+
+# Make sure that the computer does not go into sleep mode while the script is running
+symPID="$$"
+caffeinate -dimsu -w "$symPID" &>/dev/null &
+
 realname=$(dscl . read /Users/$currentUser RealName | tail -n1 | awk '{print $1}')
 udid=$(/usr/sbin/ioreg -rd1 -c IOPlatformExpertDevice | /usr/bin/grep -i "UUID" | /usr/bin/cut -c27-62)
 
@@ -96,6 +197,7 @@ profilesSTATUS=$(profiles status -type enrollment 2>&1)
 Jamf_Pro_URL="https://$(echo "$profilesSTATUS" | grep 'MDM server' | awk -F '/' '{print $3}')"
 if [[ -z "$Jamf_Pro_URL" ]]; then
 	echo "Jamf Pro URL Fehlt."
+	killProcess "caffeinate"
 	exit 1
 fi
 
@@ -137,6 +239,7 @@ if [[ -z "$jamf_api_client" ]]; then
 	else
 		ScriptLogUpdate "[ Function-Check Jamf API ]: Jamf Pro Client Secret is missing"
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
+		killProcess "caffeinate"
 		exit 1
 	fi
 fi
@@ -151,6 +254,7 @@ if [[ -z "$jamf_api_secret" ]]; then
 	else
 		ScriptLogUpdate "[ Function-Check Jamf API ]: Jamf Pro Client Secret is missing"
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
+		killProcess "caffeinate"
 		exit 1
 	fi
 fi
@@ -184,6 +288,7 @@ function dialogInstall() {
 		else
 			ScriptLogUpdate "[ Function-Check SwiftDialog ]: swiftDialog could not be installed"
 			/bin/rm -Rf "$tempDirectory"
+			killProcess "caffeinate"
 			exit 1
 	fi
 	/bin/rm -Rf "$tempDirectory"
@@ -204,7 +309,7 @@ function dialogCheck() {
 					ScriptLogUpdate "[ Function-Check SwiftDialog ]: swiftDialog version ${dialogVersion} found; proceeding..."
 			fi
 	fi
-}
+} 
 
 dialogCheck
 
@@ -213,7 +318,7 @@ dialogCheck
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 function Enable_BootstrapToken_with_currentUser() {
 	BootstrapToken_iconPath="/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns"
-	BootstrapToken_title_de="fehlender Bootstrap-Token"
+	BootstrapToken_title_de="Missingder Bootstrap-Token"
 	secondTitlePassword_de="Gebe dein aktuelles macOS-Kennwort ein, mit dem Du dich auf deinem Gerät anmeldest."
 	Passcode_Field_de="Leider fehlt das Bootstrap-Token auf Deinem System. Wir werden es reaktivieren. Hierfür benötigen wir das Passwort. Bitte gebe Dein macOS-Passwort in das Feld ein."
 	mainButtonLabelPassword_de="Weiter"
@@ -260,6 +365,7 @@ function Enable_BootstrapToken_with_currentUser() {
 		ScriptLogUpdate "[ Function-activate the bootstrap token ]: Maximum attempts reached. Exiting."
 		ScriptLogUpdate "[ Function-activate the bootstrap token ]: User has repeatedly entered the wrong password. "
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
@@ -284,6 +390,7 @@ function Enable_BootstrapToken_with_currentUser() {
 				ScriptLogUpdate "[ Function-activate the bootstrap token ]: The current user: $currentUser, is removed from the admin group and demoted to standard user."
 			fi
 			ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+			killProcess "caffeinate"
 			exit 1
 			
 		else
@@ -322,15 +429,28 @@ function checkMDMService() {
 			
 			curlRESULT=$(curl -Is "$Jamf_Pro_URL" | head -n 1)
 			Jamf_Pro_URL_available="false"
-			if [[ $(echo "$curlRESULT" | grep -c 'HTTP') -gt 0 ]] && [[ $(echo "$curlRESULT" | grep -c -e '400' -e '40[4-9]' -e '4[1-9][0-9]' -e '5[0-9][0-9]') -eq 0 ]]; then
+			if [[ $(echo "$curlRESULT" | grep -c 'HTTP') -gt 0 ]] && [[ $(echo "$curlRESULT" | grep -c -e '400' -e '40[4-9]' -e '4[1-9][0-9]' -e '5[0-9][0-9]') -eq 0 ]]
+				then
 					Jamf_Pro_URL_available="true"
+				else
+					ScriptLogUpdate "URL: $Jamf_Pro_URL could not be reached via CURL."
+					ScriptLogUpdate "Attempting to reach the server using the Jamf binary and verify the URL."
+					
+					jss_output=$(/usr/local/bin/jamf checkJSSConnection 2>&1)
+					if echo "$jss_output" | grep -q "The JSS is available."
+						then
+							jss_new_url=$(echo "$jss_output" | grep -m1 "Checking availability of" | grep -oE 'https://[a-zA-Z0-9\.-]+')
+							ScriptLogUpdate "Old URL could not be reached. URL validated via JSS check. Setting new URL: $jss_new_url"
+							Jamf_Pro_URL="$jss_new_url"
+							Jamf_Pro_URL_available="true"
+						else
+							ScriptLogUpdate "JSS check failed, no valid URL determined."
+					fi
 			fi
 	fi
 }
 
 function check_Bootstrap_Token_local_on_Device() {
-	
-	
 	
 	checkMDMService
 	Bootstrap_Token="false"
@@ -367,23 +487,27 @@ then
 			else
 				ScriptLogUpdate "[ Function-Check macOS prerequisites ]: The installed macOS: $current_macOS does not support DDM."
 				"# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
-				exit 1
+				killProcess "caffeinate"
+			exit 1
 			fi
 			
 		else
 			ScriptLogUpdate "[ Function-Check Bootstrap Token ]: Is not set and could not be transferred successfully"
+			killProcess "caffeinate"
 			exit 1
 		fi
 		
 	else
 		ScriptLogUpdate "[ Function-Check MDM Service ]: ERROR Server at $Jamf_Pro_URL is unavailable, status code: $curlRESULT"
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
 else
 	ScriptLogUpdate "[ Function-Check MDM Service ]: Warning Device is not enrolled with a MDM service or URL cold not be extracted."
 	ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
+	killProcess "caffeinate"
 	exit 1
 fi
 
@@ -396,12 +520,14 @@ function get_macos_data_Sofa_feed() {
 	macos_data_feed="$(curl -s --compressed https://sofafeed.macadmins.io/v1/macos_data_feed.json)"
 	if ! grep -q "\"$model\"" <<< "$macos_data_feed"; then
 		ScriptLogUpdate "[ Sofa Data Feed ]: Could not find your model ($model) in the JSON feed"
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
 	supported_os=$(echo "$macos_data_feed" | plutil -extract "Models.$model.SupportedOS.0" raw -expect string -o - - 2>/dev/null)
 	if [[ -z "$supported_os" ]]; then
 		ScriptLogUpdate "[ Sofa Data Feed ]: Could not find SupportedOS for $model"
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
@@ -426,6 +552,7 @@ function get_macos_data_Sofa_feed() {
 	
 	if [[ -z "$index" ]]; then
 		ScriptLogUpdate "[ Sofa Data Feed ]: Could not find OSVersion \"$macOS_Name\" in the feed"
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
@@ -477,11 +604,11 @@ function get_local_SoftwareUpdate_plist_data() {
 			
 			if [[ "$productKey" == *"major"* ]]; then
 				latest_upgradeAvailable_local_plist="true"
-				latest_upgradeVersion_local_plist=$(echo "$productKey" | sed -E 's/.*patch_([0-9]+\.[0-9]+)_.*$/\1/')
+				latest_upgradeVersion_local_plist=$(echo "$productKey" | sed -E 's/.*patch_(([0-9]+\.)+[0-9]+).*/\1/')
 				
 			elif [[ "$productKey" == *"minor"* ]]; then
 				latest_updateAvailable_local_plist="true"
-				latest_updateVersion_local_plist=$(echo "$productKey" | sed -E 's/.*patch_([0-9]+\.[0-9]+)_.*$/\1/')
+				latest_updateVersion_local_plist=$(echo "$productKey" | sed -E 's/.*patch_(([0-9]+\.)+[0-9]+).*/\1/')
 			fi
 		fi
 	done <<< "$recommendedUpdates"
@@ -667,6 +794,7 @@ case "$Manage_macOSupdateSelection" in
 					latest_updateVersion="Debug"
 				;;
 				false|*)
+					killProcess "caffeinate"
 					exit 0
 				;;
 			esac
@@ -688,6 +816,7 @@ case "$Manage_macOSupdateSelection" in
 					latest_updateVersion="Debug"
 				;;
 				false|*)
+					killProcess "caffeinate"
 					exit 0
 				;;
 			esac
@@ -709,6 +838,7 @@ case "$Manage_macOSupdateSelection" in
 					latest_updateVersion="Debug"
 				;;
 				false|*)
+					killProcess "caffeinate"
 					exit 0
 				;;
 			esac
@@ -717,6 +847,7 @@ case "$Manage_macOSupdateSelection" in
 	
 	*)
 		ScriptLogUpdate "[ Function-Check macOS ]: Invalid value for Manage_macOSupdateSelection: $Manage_macOSupdateSelection"
+		killProcess "caffeinate"
 		exit 1
 	;;
 esac
@@ -1006,8 +1137,8 @@ function delete_api_token() {
 function get_api_token() {
 	if [[ "${debugMode}" == "true" ]] || [[ "${debugMode}" == "verbose" ]]
 	then
-		ScriptLogUpdate "[ Funktion-GET API Token debugMode]: debugMode is activated"
-		ScriptLogUpdate "[ Funktion-GET API Token debugMode]: try to call the API if credentials are available"
+		ScriptLogUpdate "[ Function-GET API Token debugMode]: debugMode is activated"
+		ScriptLogUpdate "[ Function-GET API Token debugMode]: try to call the API if credentials are available"
 		
 		if [[ -n "$jamf_api_client" && -n "$jamf_api_secret" ]]
 		then
@@ -1021,18 +1152,19 @@ function get_api_token() {
 					else 
 						api_token=$(echo "${curl_response}" | awk -F '"' '{print $4;}' | xargs)
 				fi
-				ScriptLogUpdate "[ Funktion-GET API Token ]: Token was successfully generated"
+				ScriptLogUpdate "[ Function-GET API Token ]: Token was successfully generated"
 				
 			else
-				ScriptLogUpdate "[ Funktion-GET API Token ]: Token could not be generated"
-				ScriptLogUpdate "[ Funktion-GET API Token ]: Verify the --auth-jamf-client=ClientID and --auth-jamf-secret=ClientSecret are values."
+				ScriptLogUpdate "[ Function-GET API Token ]: Token could not be generated"
+				ScriptLogUpdate "[ Function-GET API Token ]: Verify the --auth-jamf-client=ClientID and --auth-jamf-secret=ClientSecret are values."
 				
 				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
+				killProcess "caffeinate"
 				exit 1
 			fi
 		else
-			ScriptLogUpdate "[ Funktion-GET API Token debugMode]: no credentials available."
-			ScriptLogUpdate "[ Funktion-GET API Token debugMode]: Continue with the test to display the dialogues."
+			ScriptLogUpdate "[ Function-GET API Token debugMode]: no credentials available."
+			ScriptLogUpdate "[ Function-GET API Token debugMode]: Continue with the test to display the dialogues."
 		fi
 		
 	else
@@ -1047,11 +1179,12 @@ function get_api_token() {
 			else 
 				api_token=$(echo "${curl_response}" | awk -F '"' '{print $4;}' | xargs)
 			fi
-			ScriptLogUpdate "[ Funktion-GET API Token ]: Token was successfully generated"
+			ScriptLogUpdate "[ Function-GET API Token ]: Token was successfully generated"
 		else
-			ScriptLogUpdate "[ Funktion-GET API Token ]: Token could not be generated"
-			ScriptLogUpdate "[ Funktion-GET API Token ]: Verify the --auth-jamf-client=ClientID and --auth-jamf-secret=ClientSecret are values."
+			ScriptLogUpdate "[ Function-GET API Token ]: Token could not be generated"
+			ScriptLogUpdate "[ Function-GET API Token ]: Verify the --auth-jamf-client=ClientID and --auth-jamf-secret=ClientSecret are values."
 			ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
+			killProcess "caffeinate"
 			exit 1
 		fi
 	fi
@@ -1090,12 +1223,14 @@ function check_DDM_Status_Jamf() {
 					ScriptLogUpdate "[ Function-Find Correct API ]: Send the command via the old API. Please switch to the new API soon"
 					ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 					delete_api_token
+					killProcess "caffeinate"
 					exit 1
 				fi
 			else
 				ScriptLogUpdate "[ Function-Find Correct API ]: ERROR"
 				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 				delete_api_token
+				killProcess "caffeinate"
 				exit 1
 			fi
 		else
@@ -1118,6 +1253,7 @@ function check_DDM_Status_Jamf() {
 				ScriptLogUpdate "[ Function-Find Correct API ]: Send the command via the old API. Please switch to the new API soon"
 				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 				delete_api_token
+				killProcess "caffeinate"
 				exit 1
 				
 			fi
@@ -1125,6 +1261,7 @@ function check_DDM_Status_Jamf() {
 			ScriptLogUpdate "[ Function-Find Correct API ]: ERROR"
 			ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 			delete_api_token
+			killProcess "caffeinate"
 			exit 1
 		fi
 	fi
@@ -1159,19 +1296,23 @@ function get_Device_Informations_from_Jamf() {
 				else
 					ScriptLogUpdate "[ Function-Get Device Informations ]: Error: Could not extract bootstrapTokenEscrowedStatus."
 					delete_api_token
-					exit 1
+					killProcess "caffeinate"
+			exit 1
 				fi
 			else
 				delete_api_token
+				killProcess "caffeinate"
 				exit 1
 			fi
 		else
 			ScriptLogUpdate "[ Function-Get Device Informations ]: Error: Could not extract device ID."
 			delete_api_token
+			killProcess "caffeinate"
 			exit 1
 		fi
 	else
 		delete_api_token
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
@@ -1183,6 +1324,7 @@ function get_Device_Informations_from_Jamf() {
 		if [[ "$DDM_Status_in_Jamf" != "true" ]]
 		then
 			ScriptLogUpdate "[ Function-Get Device Informations ]: declarativeDeviceManagementEnabled is not true please check device"
+			killProcess "caffeinate"
 			exit 1
 		else
 			DDM_Status_on_Server="true"
@@ -1190,6 +1332,7 @@ function get_Device_Informations_from_Jamf() {
 	else
 		ScriptLogUpdate "[ Function-Get Device Informations ]: Error: Could not extract bootstrapTokenEscrowedStatus."
 		delete_api_token
+		killProcess "caffeinate"
 		exit 1
 	fi
 }
@@ -1250,23 +1393,26 @@ function create_DDM_Update_Plan() {
 			
 			if [[ -n "$forceInstallLocalDateTime" ]]
 			then
-				Hymand_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$forceInstallLocalDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
-				if [[ -n "$Hymand_read_forceInstallLocalDateTime" ]]
+				Human_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$forceInstallLocalDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
+				if [[ -n "$Human_read_forceInstallLocalDateTime" ]]
 				then
-					ScriptLogUpdate "Umgewandelte Zeit: $Hymand_read_forceInstallLocalDateTime"
+					ScriptLogUpdate "Umgewandelte Zeit: $Human_read_forceInstallLocalDateTime"
 					existing_active_plan="true"
 				else
 					ScriptLogUpdate "Error during the conversion of forceInstallLocalDateTime: $forceInstallLocalDateTime"
-					exit 1
+					killProcess "caffeinate"
+			exit 1
 				fi
 			else
 				ScriptLogUpdate "forceInstallLocalDateTime not found or empty."
+				killProcess "caffeinate"
 				exit 1
 			fi
 			
 			
 		else
 			ScriptLogUpdate "[ Function-Create Plan ]: Error when extracting the plan ID."
+			killProcess "caffeinate"
 			exit 1
 		fi
 	else
@@ -1275,6 +1421,7 @@ function create_DDM_Update_Plan() {
 		delete_api_token
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 		
+		killProcess "caffeinate"
 		exit 1
 	fi
 }
@@ -1286,11 +1433,13 @@ function get_all_Plans_information_for_Device() {
 	
 	if [ $? -ne 0 ]; then
 		ScriptLogUpdate "Error sending the API request."
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
 	if [[ ! "$existingPlansResponse" =~ ^\{.*\}$ ]]; then
 		ScriptLogUpdate "Invalid JSON response received."
+		killProcess "caffeinate"
 		exit 1
 	fi
 	
@@ -1299,7 +1448,44 @@ function get_all_Plans_information_for_Device() {
 	if [ "$planCount" -eq 0 ]
 	then
 		ScriptLogUpdate "No update plans found for deviceId $deviceID."
-		create_DDM_Update_Plan
+		if [[ "$debugMode" == "true" || "$debugMode" == "verbose" ]]
+		then
+			case "$Manage_macOSupdateSelection" in
+				"LATEST_ANY")
+					if [[ "$latest_updateAvailable_local_plist" == "true" || "$latest_upgradeAvailable_local_plist" == "true" ]]
+					then
+						ScriptLogUpdate "creating plan in debug mode"
+						create_DDM_Update_Plan
+					else
+						ScriptLogUpdate "no updates or upgrades available, skipping plan creation. Continue with dialog display"
+					fi
+				;;
+				"LATEST_MAJOR")
+					if [[ "$latest_upgradeAvailable_local_plist" == "true" ]]
+					then
+						ScriptLogUpdate "creating plan in debug mode"
+						create_DDM_Update_Plan
+					else
+						ScriptLogUpdate "no upgrades available, skipping plan creation. Continue with dialog display"
+					fi
+				;;
+				"LATEST_MINOR")
+					if [[ "$latest_updateAvailable_local_plist" == "true" ]]
+					then
+						ScriptLogUpdate "creating plan in debug mode"
+						create_DDM_Update_Plan
+					else
+						ScriptLogUpdate "no updates available, skipping plan creation. Continue with dialog display"
+					fi
+				;;
+				*)
+					ScriptLogUpdate "Unknown macOS update selection: $Manage_macOSupdateSelection"
+				;;
+			esac
+		else
+			ScriptLogUpdate "creating plan"
+			create_DDM_Update_Plan
+		fi
 	else
 		planUUIDs=$(echo "$existingPlansResponse" | grep -o '"planUuid"[[:space:]]*:[[:space:]]*"[a-f0-9\-]*"' | awk -F'"' '{print $4}')
 		
@@ -1338,6 +1524,7 @@ function get_all_Plans_information_for_Device() {
 				done
 				ScriptLogUpdate "There can only be one active plan."
 				ScriptLogUpdate "Please check the get_status_description function."
+				killProcess "caffeinate"
 				exit 1
 				
 			else
@@ -1351,8 +1538,8 @@ function get_all_Plans_information_for_Device() {
 				
 				if [[ -n "$active_forceInstallLocalDateTime" ]]
 				then
-					Hymand_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$active_forceInstallLocalDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
-					if [[ -n "$Hymand_read_forceInstallLocalDateTime" ]]
+					Human_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$active_forceInstallLocalDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
+					if [[ -n "$Human_read_forceInstallLocalDateTime" ]]
 					then
 						updateAction=$(extract_json_value "$active_planDetails" "updateAction")
 						versionType=$(extract_json_value "$active_planDetails" "versionType")
@@ -1368,7 +1555,7 @@ function get_all_Plans_information_for_Device() {
 						echo "versionType: $versionType"
 						echo "specificVersion: $specificVersion"
 						echo "forceInstallLocalDateTime: $forceInstallLocalDateTime"
-						echo "Transformed time: $Hymand_read_forceInstallLocalDateTime"
+						echo "Transformed time: $Human_read_forceInstallLocalDateTime"
 						echo "state: $state"
 						echo "Status description: $status_description"
 						echo "----------------------------------------"
@@ -1384,16 +1571,55 @@ function get_all_Plans_information_for_Device() {
 						existing_active_plan="true"
 					else
 						echo "Error during the conversion of forceInstallLocalDateTime: $active_forceInstallLocalDateTime"
+						killProcess "caffeinate"
 						exit 1
 					fi
 				else
 					echo "forceInstallLocalDateTime not found or empty."
+					killProcess "caffeinate"
 					exit 1
 				fi
 			fi
 		else
 			ScriptLogUpdate "[ Function-Check macOS ]: No active plan found."
-			create_DDM_Update_Plan
+			if [[ "$debugMode" == "true" || "$debugMode" == "verbose" ]]
+			then
+				case "$Manage_macOSupdateSelection" in
+					"LATEST_ANY")
+						if [[ "$latest_updateAvailable_local_plist" == "true" || "$latest_upgradeAvailable_local_plist" == "true" ]]
+						then
+							ScriptLogUpdate "creating plan in debug mode"
+							create_DDM_Update_Plan
+						else
+							ScriptLogUpdate "no updates or upgrades available, skipping plan creation. Continue with dialog display"
+						fi
+					;;
+					"LATEST_MAJOR")
+						if [[ "$latest_upgradeAvailable_local_plist" == "true" ]]
+						then
+							ScriptLogUpdate "creating plan in debug mode"
+							create_DDM_Update_Plan
+						else
+							ScriptLogUpdate "no upgrades available, skipping plan creation. Continue with dialog display"
+						fi
+					;;
+					"LATEST_MINOR")
+						if [[ "$latest_updateAvailable_local_plist" == "true" ]]
+						then
+							ScriptLogUpdate "creating plan in debug mode"
+							create_DDM_Update_Plan
+						else
+							ScriptLogUpdate "no updates available, skipping plan creation. Continue with dialog display"
+						fi
+					;;
+					*)
+						ScriptLogUpdate "Unknown macOS update selection: $Manage_macOSupdateSelection"
+					;;
+				esac
+			else
+				ScriptLogUpdate "creating plan"
+				create_DDM_Update_Plan
+			fi
 		fi
 	fi
 }
@@ -1555,7 +1781,7 @@ if [[ "${debugMode}" == "true" ]] || [[ "${debugMode}" == "verbose" ]]
 			futureUnixTimeDateTime=$(/bin/date -j -f "%s" "$finalUnixTime" "+%Y-%m-%dT%H:%M:%S")
 			ScriptLogUpdate "Scheduled update time: $futureUnixTimeDateTime"
 			
-				Hymand_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$futureUnixTimeDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
+				Human_read_forceInstallLocalDateTime=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$futureUnixTimeDateTime" +"%d-%m-%Y %H:%M" 2>/dev/null)
 		fi
 	else
 		
@@ -1567,7 +1793,7 @@ fi
 # # # # # # # # # # # # # # # # # # # # # # # # # Read Plist Variablen  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * Timers and values * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
-Max_Message_Time_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:MaxMessageTime" "/Library/Managed Preferences/${BundleIDPlist}.plist"2>/dev/null) || Max_Message_Time_Custom="300"
+ScriptLogUpdate=$(/usr/libexec/PlistBuddy -c "Print :Messanges:MaxMessageTime" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || ScriptLogUpdate="300"
 buttontimer_Final_Message_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_Final_Message" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || buttontimer_Final_Message_Custom="15"
 
 # * * * * * * * * * * * * * * * * * * * * * * * * Test and Messages * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
@@ -1582,12 +1808,46 @@ Dialog_update_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dia
 Dialog_update_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_messagefont" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Dialog_update_messagefont="14"
 
 Standard_Update_Prompt=`/usr/libexec/PlistBuddy -c "Print :Messanges:StandardUpdatePrompt" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
-Standard_Update_Prompt="$(echo -e "$Standard_Update_Prompt" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%Install_Button_Custom%/${Install_Button_Custom}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${Hymand_read_forceInstallLocalDateTime}/")"
+Standard_Update_Prompt="$(echo -e "$Standard_Update_Prompt" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%Install_Button_Custom%/${Install_Button_Custom}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${Human_read_forceInstallLocalDateTime}/")"
+
 
 Banner_dialog="false"
 BannerImage=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:BannerImage" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || BannerImage=""
 if [[ -n "$BannerImage" ]]; then
 	Banner_dialog="true"
+fi
+
+
+Script_default_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Default_Icon:Script_default" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Script_default_icon="false"
+if [[ "$Script_default_icon" == "true" ]]
+	then
+		Custem_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Default_Icon:Custem_icon" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Custem_icon=""
+		if [[ -n "$Custem_icon" ]]
+			then
+				Icon="$Custem_icon"
+				ScriptLogUpdate "Using the managed value: $Icon"
+			else
+				ScriptLogUpdate "Value is set to managed, but no path is specified"
+				Icon="SF=gear.badge"
+		fi
+	else
+		Icon="SF=gear.badge"
+fi
+
+Dialog_overlayicon="false"
+Overlayicon_Self_Service_default=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_overlayicon:Self_Service_default" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Overlayicon_Self_Service_default="false"
+if [[ "$Overlayicon_Self_Service_default" == "true" ]]; then
+	Custem_overlay_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_overlayicon:Custem_overlay_icon" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Custem_overlay_icon=""
+	if [[ -n "$Custem_overlay_icon" ]]
+		then
+			overlayicon="$Custem_overlay_icon"
+			ScriptLogUpdate "Using the profile-defined setting: $Custem_overlay_icon"
+			Dialog_overlayicon="true"
+		else
+			ScriptLogUpdate "No custom overlay icon specified Use the Self Service default"
+			overlayicon="/Users/$currentUser/Library/Application Support/com.jamfsoftware.selfservice.mac/Documents/Images/brandingimage.png"
+			Dialog_overlayicon="true"
+	fi
 fi
 
 Device_Info_de="Geräteinformationen"
@@ -1597,7 +1857,7 @@ Current_OS_de="Instal. macOS"
 Current_OS_en="Installed macOS"
 
 available_OS_de="neues Update"
-available_OS_en="neu Update"
+available_OS_en="new Update"
 
 CurrentDeferralValue_Text_de="Verschieb. übrig"
 CurrentDeferralValue_Text_en="Deferrals remaining"
@@ -1617,6 +1877,7 @@ remainingHourseTitel=remainingHourseTitel_${UserLanguage}
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Create default Dialog Arguments # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+waitForActiveUser
 
 buttontimer=$buttontimer_Final_Message_Custom
 case ${debugMode} in
@@ -1625,9 +1886,8 @@ case ${debugMode} in
 	"verbose"   ) dialog_bin="${dialog_bin} --verbose --resizable --debug red" ;;
 esac
 
-if [ "${Banner_dialog}" = "true" ]; then
-	dialog_bin="${dialog_bin} --bannerimage \"${BannerImage}\""
-fi
+[ "${Banner_dialog}" = "true" ] && dialog_bin="${dialog_bin} --bannerimage \"${BannerImage}\""
+[ "${Dialog_overlayicon}" = "true" ] && dialog_bin="${dialog_bin} --overlayicon \"${overlayicon}\""
 
 Promt_Dialog_to_User="$dialog_bin \
 --moveable \
@@ -1647,7 +1907,7 @@ Promt_Dialog_to_User="$dialog_bin \
 --button1disabled \
 --button2text \"$Defer_Button_Custom in $buttontimer\" \
 --button2disabled \
---timer \"$Max_Message_Time_Custom\" \
+--timer \"$ScriptLogUpdate\" \
 --infobox \"_________________\n\n"${!Device_Info}"\n\n${!Current_OS}: $current_macOS \n\n${!available_OS}: $latest_updateVersion \n_________________\nUpdate Details \n\n$Sofa_Infobox\" \
 --commandfile \"$dialog_log\" \
 --infotext \"$scriptVersion\" \ "
@@ -1677,7 +1937,12 @@ if [ $result -eq 2 ]
 	then
 		ScriptLogUpdate "Updates ${latest_updateVersion} available."
 		ScriptLogUpdate "User has moved the update."
+		killProcess "caffeinate"
+		exit 0
+		
 	else
 		ScriptLogUpdate "User has clicked on install."
 		updateCLI
+		killProcess "caffeinate"
+		exit 0
 fi
