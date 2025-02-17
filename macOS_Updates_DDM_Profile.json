@@ -10,19 +10,19 @@
         "DeferralValueCustom": {
           "title": "Maximum Deferral (non-critical)",
           "default": 5,
-          "description": "The maximum deferral for non-critical updates",
+          "description": "The maximum deferral for non-critical updates.",
           "type": "number"
         },
         "DeferralValueCustomCritical": {
           "title": "Maximum Deferral (critical)",
           "default": 2,
-          "description": "The maximum deferral for critical updates",
+          "description": "The maximum deferral for critical updates.",
           "type": "number"
         },
         "scriptLog": {
-          "title": "scriptLog",
+          "title": "Script Log",
           "default": "/var/log/it.next.macOS.Update.log",
-          "description": "Where should the script logs be wrote and saved",
+          "description": "Location where the script logs will be written and saved.",
           "type": "string"
         }
       }
@@ -32,7 +32,7 @@
       "type": "object",
       "properties": {
         "macOSupdateSelection": {
-          "title": "macOS update selection",
+          "title": "macOS Update Selection",
           "description": "Select which type of macOS update should be applied.",
           "type": "string",
           "default": "LATEST_ANY",
@@ -52,14 +52,14 @@
           }
         },
         "macOSspecificVersion": {
-          "title": "Specific macOS version",
-          "description": "Enter the desired version number here (only relevant if ‘Specific version’ has been selected).",
+          "title": "Specific macOS Version",
+          "description": "Enter the desired version number here (only relevant if 'Specific version' has been selected).",
           "type": "string",
           "default": ""
         },
         "dontRunUpdatesOnDays": {
-          "title": "Don't run updates on days",
-          "description": "Select the days of the week on which updates should NOT be carried out. If it is calculated that the update should start on the day on which it may not be executed, the next possible day is defined.",
+          "title": "Don't Run Updates on Days",
+          "description": "Select the days of the week on which updates should NOT be carried out. If the update is scheduled for a day when it is not permitted, the next possible day will be chosen.",
           "type": "object",
           "properties": {
             "Monday": {
@@ -101,100 +101,153 @@
           "additionalProperties": false
         },
         "runUpdatesOnTime": {
-          "title": "Run updates on time",
-          "description": "Enter the time (hour and minute) at which the update is to be carried out. If no time is defined, the update is started at the time at which the plan was created. A specific time can therefore be defined, e.g. 13:00. Please note that the 24-hour system is used here.",
+          "title": "Run Updates on Time",
+          "description": "Enter the time (hour and minute) at which the update should be executed. If no time is specified, the update will start when the plan is created. A specific time can be set, e.g., 13:00. Please note that a 24-hour clock is used.",
           "type": "object",
           "properties": {
             "hour": {
               "title": "Hour",
-              "description": "Hour of the day (0-23)",
+              "description": "Hour of the day (0-23).",
               "type": "string",
               "default": ""
             },
             "minute": {
               "title": "Minute",
-              "description": "Minute of the hour (0-59)",
+              "description": "Minute of the hour (0-59).",
               "type": "string",
               "default": ""
             }
           },
-          "required": ["hour", "minute"],
+          "required": [
+            "hour",
+            "minute"
+          ],
           "additionalProperties": false
         }
       }
     },
     "Dialog_Settings": {
-      "description": "The Swift dialog window can be adjusted in height, width, heading size and font size. If no values are set via the plist, the values from the script are used.",
+      "description": "The Swift dialog window can be adjusted in height, width, heading size, and font size. If no values are set via the profile, the default values from the script will be used.",
       "type": "object",
       "properties": {
         "BannerImage": {
-          "title": "BannerImage",
+          "title": "Banner Image",
           "default": "",
-          "description": "Path to banner, if you want the window to be displayed with a banner.",
+          "description": "Path to a banner image, if you want the window to be displayed with a banner.",
           "type": "string"
         },
+        "Dialog_overlayicon": {
+          "anyOf": [
+            {
+              "title": "Not Configured",
+              "type": "null"
+            },
+            {
+              "title": "Configured",
+              "type": "object",
+              "properties": {
+                "Self_Service_default": {
+                  "description": "Should Jamf Self Service be used?",
+                  "type": "boolean"
+                },
+                "Custem_overlay_icon": {
+                  "description": "Define a path if Self_Service_default is set to false.",
+                  "type": "string"
+                }
+              }
+            }
+          ],
+          "description": "Before editing, please note: If nothing is entered, the default overlay icon from Self Service is used. You can define an alternative path here.",
+          "property_order": 1,
+          "title": "Dialog Overlay Icon"
+        },
+        "Default_Icon": {
+          "anyOf": [
+            {
+              "title": "Not Configured",
+              "type": "null"
+            },
+            {
+              "title": "Configured",
+              "type": "object",
+              "properties": {
+                "Script_default": {
+                  "description": "Should the icon defined in the script be used?",
+                  "type": "boolean"
+                },
+                "Custem_icon": {
+                  "description": "Define a path if you do not want to use the icon defined in the script.",
+                  "type": "string"
+                }
+              }
+            }
+          ],
+          "description": "Before editing, please note: If set to false, please provide the path or URL for your custom icon.",
+          "property_order": 1,
+          "title": "Icon"
+        },
         "Dialog_update_width": {
-          "title": "Dialog_update_width",
+          "title": "Dialog Update Width",
           "default": "740",
-          "description": "Width of the window ",
+          "description": "Width of the window.",
           "type": "string"
         },
         "Dialog_update_height": {
-          "title": "Dialog_update_height",
+          "title": "Dialog Update Height",
           "default": "540",
-          "description": "Height of the window, if not specified, the default value in the script is used.",
+          "description": "Height of the window; if not specified, the default value from the script is used.",
           "type": "string"
         },
         "Dialog_update_titlefont": {
-          "title": "Dialog_update_titlefont",
+          "title": "Dialog Update Title Font",
           "default": "20",
-          "description": "Font size for the titel. If not specified, the default value in the script is used.",
+          "description": "Font size for the title; if not specified, the default value from the script is used.",
           "type": "string"
         },
         "Dialog_update_messagefont": {
-          "title": "Dialog_update_messagefont",
+          "title": "Dialog Update Message Font",
           "default": "14",
-          "description": "Font size for the text. If not specified, the default value in the script is used.",
+          "description": "Font size for the text; if not specified, the default value from the script is used.",
           "type": "string"
         }
       }
     },
     "Buttontimer": {
-      "description": "So that the user takes the time to read the message and does not accidentally click the buttons, they are deactivated for a certain time and only reactivated after expiry. This time can be adjusted here for the various windows. Specified in seconds. If no values are set via the profile, the default values are used in the Script.",
+      "description": "To ensure the user has enough time to read the message without accidentally clicking the buttons, they are deactivated for a specified time and only reactivated after that period. This time (in seconds) can be adjusted for the various windows. If no values are set via the profile, the default values from the script will be used.",
       "type": "object",
       "properties": {
         "buttontimer_Final_Message": {
-          "title": "Timer für Buttons Final Message",
+          "title": "Timer for Buttons in Final Message",
           "default": 30,
-          "description": "How long does it take until the buttons in the 'Final User Info' are activated and the user can click on them so that the user has enough time to read the message. Specified in seconds.",
+          "description": "Time in seconds until the buttons in the 'Final User Info' are activated, giving the user enough time to read the message.",
           "type": "number"
         }
       }
     },
     "Messanges": {
-      "description": "Definition of the messages for the standard message, error message, etc. Please specify the complete messages in the respective language carefully. The following variables can be used: %REAL_NAME% | %CURRENT_DEFERRAL_VALUE% | %forceInstallLocalDateTime% These are replaced in the script with the respective variables in the script",
+      "description": "Definition of the messages for the standard message, error message, etc. Please specify the complete messages in the respective language carefully. The following variables can be used: %REAL_NAME% | %CURRENT_DEFERRAL_VALUE% | %forceInstallLocalDateTime%. These will be replaced in the script with the respective values.",
       "type": "object",
       "properties": {
         "MaxMessageTime": {
-          "title": "Timeout Meldung",
+          "title": "Timeout for Message",
           "default": 300,
-          "description": "How long the message is displayed to users before it is automatically closed. Specified in seconds.",
+          "description": "Duration in seconds for which the message is displayed to users before it is automatically closed.",
           "type": "number"
         },
         "InstallButtonLabel": {
-          "title": "Button to proceed.",
-          "description": "Button to proceed.",
+          "title": "Install Button Label",
+          "description": "Label for the button to proceed.",
           "type": "string",
           "default": "Now"
         },
         "DeferButtonLabel": {
-          "title": "Button: Move",
-          "description": "Button to move.",
+          "title": "Defer Button Label",
+          "description": "Label for the button to defer.",
           "type": "string",
           "default": "Later"
         },
         "StandardUpdatePrompt": {
-          "title": "Update: Standard message",
+          "title": "Standard Update Message",
           "description": "The message with which the user is informed about the available updates.",
           "type": "string",
           "default": ""
