@@ -1,6 +1,6 @@
 #!/bin/bash
 #############################################################################
-# Shellscript		:	Create DDM Softwareupdate Plan
+# Shellscript			:	Create DDM Softwareupdate Plan
 # Author			:	Andreas Vogel, NEXT Enterprise GmbH
 # Info				:	Script only works with macOS Sonoma (14) and higher
 #############################################################################
@@ -455,7 +455,7 @@ function check_Bootstrap_Token_local_on_Device() {
 	checkMDMService
 	Bootstrap_Token="false"
 	# ScriptLogUpdate "[ Function-Check Bootstrap Token ]: Checking the bootstrap token status local on the macOS"
-	if [[ $(echo "$profilesSTATUS" | grep -ic 'YES') -eq 2 ]]
+	if [[ $(profiles status -type bootstraptoken | grep -ic 'YES') -eq 2 ]]
 		then
 			Bootstrap_Token="true"
 		else
