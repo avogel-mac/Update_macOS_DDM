@@ -8,7 +8,6 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jamf/bin/
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
 scriptVersion="1.0.3.b"
 debugMode="${6:-"verbose"}"                                                  # Debug Mode [ verbose (default) | true | false ]
 
@@ -151,7 +150,7 @@ ScriptLogUpdate "Finder & Dock are running; proceeding …"
 ScriptLogUpdate "Check for Logged-in System Accounts …"
 
 counter="1"
-
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
 until { [[ "${currentUser}" != "_mbsetupuser" ]] || [[ "${counter}" -gt "180" ]]; } && { [[ "${currentUser}" != "loginwindow" ]] || [[ "${counter}" -gt "30" ]]; } ; do
 	
 	ScriptLogUpdate "Logged-in User Counter: ${counter}"
@@ -164,7 +163,7 @@ done
 # Make sure that the computer does not go into sleep mode while the script is running
 symPID="$$"
 caffeinate -dimsu -w "$symPID" &>/dev/null &
-
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
 realname=$(dscl . read /Users/$currentUser RealName | tail -n1 | awk '{print $1}')
 udid=$(/usr/sbin/ioreg -rd1 -c IOPlatformExpertDevice | /usr/bin/grep -i "UUID" | /usr/bin/cut -c27-62)
 
