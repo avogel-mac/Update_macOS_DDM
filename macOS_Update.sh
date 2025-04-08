@@ -1,6 +1,6 @@
 #!/bin/bash
 #############################################################################
-# Shellscript			:	Create DDM Softwareupdate Plan
+# Shellscript		:	Create DDM Softwareupdate Plan
 # Author			:	Andreas Vogel, NEXT Enterprise GmbH
 # Info				:	Script only works with macOS Sonoma (14) and higher
 #############################################################################
@@ -8,25 +8,73 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jamf/bin/
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="1.0.3.b"
+scriptVersion="1.0.4"
 debugMode="${6:-"verbose"}"                                                  # Debug Mode [ verbose (default) | true | false ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 BundleIDPlist="it.next.macOS.update"
-Deferral_Value_Custom=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:DeferralValueCustom" "/Library/Managed Preferences/${BundleIDPlist}.plist")
-DeferralValueCustomCritical=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:DeferralValueCustomCritical" "/Library/Managed Preferences/${BundleIDPlist}.plist")
-Manage_macOSspecificVersion=$(/usr/libexec/PlistBuddy -c "Print :Updates:macOSspecificVersion" "/Library/Managed Preferences/${BundleIDPlist}.plist")
-Manage_macOSupdateSelection=$(/usr/libexec/PlistBuddy -c "Print :Updates:macOSupdateSelection" "/Library/Managed Preferences/${BundleIDPlist}.plist")
-DontRunMonday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Monday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunMonday="false"
-DontRunTuesday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Tuesday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunTuesday="false"
-DontRunWednesday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Wednesday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunWednesday="false"
-DontRunThursday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Thursday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunThursday="false"
-DontRunFriday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Friday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunFriday="false"
-DontRunSaturday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Saturday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunSaturday="false"
-DontRunSunday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Sunday" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || DontRunSunday="false"
-UpdateHour=$(/usr/libexec/PlistBuddy -c "Print :Updates:runUpdatesOnTime:hour" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null)
-UpdateMinute=$(/usr/libexec/PlistBuddy -c "Print :Updates:runUpdatesOnTime:minute" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null)
+Managed_Preferences="/Library/Managed Preferences/${BundleIDPlist}.plist"
+Deferral_Value_Custom=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:DeferralValueCustom" "$Managed_Preferences")
+DeferralValueCustomCritical=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:DeferralValueCustomCritical" "$Managed_Preferences")
+Manage_macOSspecificVersion=$(/usr/libexec/PlistBuddy -c "Print :Updates:macOSspecificVersion" "$Managed_Preferences")
+Manage_macOSupdateSelection=$(/usr/libexec/PlistBuddy -c "Print :Updates:macOSupdateSelection" "$Managed_Preferences")
+DontRunMonday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Monday" "$Managed_Preferences" 2>/dev/null) || DontRunMonday="false"
+DontRunTuesday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Tuesday" "$Managed_Preferences" 2>/dev/null) || DontRunTuesday="false"
+DontRunWednesday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Wednesday" "$Managed_Preferences" 2>/dev/null) || DontRunWednesday="false"
+DontRunThursday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Thursday" "$Managed_Preferences" 2>/dev/null) || DontRunThursday="false"
+DontRunFriday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Friday" "$Managed_Preferences" 2>/dev/null) || DontRunFriday="false"
+DontRunSaturday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Saturday" "$Managed_Preferences" 2>/dev/null) || DontRunSaturday="false"
+DontRunSunday=$(/usr/libexec/PlistBuddy -c "Print :Updates:dontRunUpdatesOnDays:Sunday" "$Managed_Preferences" 2>/dev/null) || DontRunSunday="false"
+UpdateHour=$(/usr/libexec/PlistBuddy -c "Print :Updates:runUpdatesOnTime:hour" "$Managed_Preferences" 2>/dev/null)
+UpdateMinute=$(/usr/libexec/PlistBuddy -c "Print :Updates:runUpdatesOnTime:minute" "$Managed_Preferences" 2>/dev/null)
+scriptLog=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:scriptLog" "$Managed_Preferences" 2>"/dev/null")
+Dialog_Silent_Mode=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_Silent_Mode" "$Managed_Preferences" 2>/dev/null) || Dialog_Silent_Mode="false"
+
+# Title for dialogue window
+title=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:title" "$Managed_Preferences" 2>/dev/null)
+title=${title:-"macOS Software Update"}
+
+# Texts in the respective languages for the info
+ActiveExploits_text=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:ActiveExploits_text" "$Managed_Preferences" 2>/dev/null)
+ActiveExploits_text=${ActiveExploits_text:-"Actively exploited security vulnerabilities"}
+
+CVEs_text=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:CVEs_text" "$Managed_Preferences" 2>/dev/null)
+CVEs_text=${CVEs_text:-"Fixed vulnerabilities"}
+
+Current_OS=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:Current_OS" "$Managed_Preferences" 2>/dev/null)
+Current_OS=${Current_OS:-"Installed macOS"}
+
+Device_Info=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:Device_Info" "$Managed_Preferences" 2>/dev/null)
+Device_Info=${Device_Info:-"Device information"}
+
+available_OS=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:available_OS" "$Managed_Preferences" 2>/dev/null)
+available_OS=${available_OS:-"new update"}
+
+critical_Updatetext=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:critical_Updatetext" "$Managed_Preferences" 2>/dev/null)
+critical_Updatetext=${critical_Updatetext:-"Critical Update"}
+
+# BootstrapToken window
+BootstrapToken_title=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:BootstrapToken_title" "$Managed_Preferences" 2>/dev/null)
+BootstrapToken_title=${BootstrapToken_title:-"Missing Bootstrap Token"}
+
+Passcode_Field=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:Passcode_Field" "$Managed_Preferences" 2>/dev/null)
+Passcode_Field=${Passcode_Field:-"Unfortunately, the bootstrap token is missing on your system. We will reactivate it. For this, we need the password. Please enter your macOS password in the field."}
+
+Update_Details_Titel=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:Update_Details_Titel" "$Managed_Preferences" 2>/dev/null)
+Update_Details_Titel=${Update_Details_Titel:-"Update Details"}
+
+mainButtonLabelPassword=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:mainButtonLabelPassword" "$Managed_Preferences" 2>/dev/null)
+mainButtonLabelPassword=${mainButtonLabelPassword:-"Continue"}
+
+passwordRegexErrorMessage=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:passwordRegexErrorMessage" "$Managed_Preferences" 2>/dev/null)
+passwordRegexErrorMessage=${passwordRegexErrorMessage:-"The specified password does not meet the requirements."}
+
+placeholderPassword=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:placeholderPassword" "$Managed_Preferences" 2>/dev/null)
+placeholderPassword=${placeholderPassword:-"Enter password here"}
+
+secondTitlePassword=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Localized_Texts:secondTitlePassword" "$Managed_Preferences" 2>/dev/null)
+secondTitlePassword=${secondTitlePassword:-"Enter your current macOS password used to log in to your device."}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Testing | Script  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -87,8 +135,6 @@ function waitForActiveUser() {
 	return 0
 }
 
-
-scriptLog=$(/usr/libexec/PlistBuddy -c "Print :Deferral_and_scriptLog:scriptLog" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>"/dev/null")
 if [[ -z "$scriptLog" ]]; then 
 	scriptLog="/var/log/it.next.macOS.Update.log"
 fi
@@ -165,6 +211,12 @@ symPID="$$"
 caffeinate -dimsu -w "$symPID" &>/dev/null &
 currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
 realname=$(dscl . read /Users/$currentUser RealName | tail -n1 | awk '{print $1}')
+
+# If realname only contains “RealName:”, read out again and remove “RealName:”
+if [ "$realname" = "RealName:" ]; then
+	realname=$(dscl . read /Users/"$currentUser" RealName | sed 's/RealName: //')
+fi
+
 udid=$(/usr/sbin/ioreg -rd1 -c IOPlatformExpertDevice | /usr/bin/grep -i "UUID" | /usr/bin/cut -c27-62)
 
 current_macOS=$(/usr/bin/sw_vers -productVersion)
@@ -195,19 +247,10 @@ profilesSTATUS=$(profiles status -type enrollment 2>&1)
 
 Jamf_Pro_URL="https://$(echo "$profilesSTATUS" | grep 'MDM server' | awk -F '/' '{print $3}')"
 if [[ -z "$Jamf_Pro_URL" ]]; then
-	echo "Jamf Pro URL Fehlt."
+	echo "Jamf Pro URL is missing."
 	killProcess "caffeinate"
 	exit 1
 fi
-
-Language=$(/usr/libexec/PlistBuddy -c 'print AppleLanguages:0' "/Users/${currentUser}/Library/Preferences/.GlobalPreferences.plist")
-if [[ $Language = de* ]]
-	then
-		UserLanguage="de"
-	else
-		UserLanguage="en"
-fi
-
 
 case "${debugMode}" in
 	"true")
@@ -261,7 +304,7 @@ fi
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # make sure SwiftDialog is installed  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-swiftDialogMinimumRequiredVersion="2.5.0.4768" 
+swiftDialogMinimumRequiredVersion="2.5.5.4802" 
 dialog_bin="/usr/local/bin/dialog"
 dialog_log="/var/tmp/dialog.log"
 
@@ -312,41 +355,120 @@ function dialogCheck() {
 
 dialogCheck
 
+function Check_DND_Status() {
+	active_dnd="false"
+	ScriptLogUpdate "[ Function-Check DDM ]: Checking for a DND status via applications"
+	teams_event=$(log show --style syslog --last 30m --process "powerd" | grep "Microsoft Teams Call in progress" | tail -1)
+	if [ -n "$teams_event" ]; then
+		in_meeting_count=$(printf %s "$teams_event" | grep -Fo "Created" | wc -l)
+		left_meeting_count=$(printf %s "$teams_event" | grep -Fo "Released" | wc -l)
+		if [ "$in_meeting_count" -eq 1 ]; then
+			meeting_status="In meeting"
+		elif [ "$left_meeting_count" -eq 1 ]; then
+			meeting_status="Not in meeting"
+		else
+			meeting_status="Unknown"
+		fi
+	else
+		meeting_status="Unknown"
+	fi
+	
+	Teams_DND_mode="false"
+	if [ "$meeting_status" != "Not in meeting" ] && [ "$meeting_status" != "Unknown" ]; then
+		Teams_DND_mode="true"
+	fi
+	
+	inMeeting_Webex() {
+		ps auxww | grep -q "[(]WebexAppLauncher)" && return 0 || return 1
+	}
+	
+	Webex_in_meeting="false"
+	if inMeeting_Webex; then
+		Webex_in_meeting="true"
+	fi
+	
+	inMeeting_Goto() {
+		pgrep "GoTo Helper \(Plugin\)" &>/dev/null && return 0 || return 1
+	}
+	
+	Goto_in_meeting="false"
+	if inMeeting_Goto; then
+		Goto_in_meeting="true"
+	fi
+	
+	inMeeting_Zoom() {
+		pgrep "CptHost" &>/dev/null && return 0 || return 1
+	}
+	
+	Zoom_in_meeting="false"
+	if inMeeting_Zoom; then
+		Zoom_in_meeting="true"
+	fi
+	
+	macOSdoNotDisturb() {
+		OS_major="$(sw_vers -productVersion | cut -d. -f1)"
+		consoleUserID="$(stat -f %u /dev/console)"
+		consoleUser="$(stat -f %Su /dev/console)"
+		if [ "${OS_major}" = "10" ]; then
+			dndStatus="$(launchctl asuser ${consoleUserID} sudo -u ${consoleUser} defaults -currentHost read com.apple.notificationcenterui doNotDisturb 2>/dev/null)"
+			((dndStatus)) && return 0 || return 1
+		elif [ "${OS_major}" = "11" ]; then
+			dndStatus="$(/usr/libexec/PlistBuddy -c "print :userPref:enabled" /dev/stdin 2>/dev/null <<< "$(plutil -extract dnd_prefs xml1 -o - /dev/stdin <<< "$(launchctl asuser ${consoleUserID} sudo -u ${consoleUser} defaults export com.apple.ncprefs.plist -)" | xmllint --xpath "string(//data)" - | base64 --decode | plutil -convert xml1 - -o -)")"
+			[ -n "${dndStatus}" ] && return 0 || return 1
+		elif [ "${OS_major}" -ge "12" ]; then
+			consoleUserHomeFolder=$(dscl . -read /Users/"${consoleUser}" NFSHomeDirectory | awk -F ': ' '{print $2}')
+			file_assertions="${consoleUserHomeFolder}/Library/DoNotDisturb/DB/Assertions.json"
+			[ ! -f "${file_assertions}" ] && return 1
+			! grep -q "storeAssertionRecords" "${file_assertions}" 2>/dev/null && return 1 || return 0
+		fi
+	}
+	
+	macOS_DnD_Focus_mode="false"
+	if macOSdoNotDisturb; then
+		macOS_DnD_Focus_mode="true"
+	fi
+	
+	active_apps=""
+	if [ "$Teams_DND_mode" = "true" ]; then
+		active_apps="$active_apps Teams"
+	fi
+	if [ "$Webex_in_meeting" = "true" ]; then
+		active_apps="$active_apps Webex"
+	fi
+	if [ "$Goto_in_meeting" = "true" ]; then
+		active_apps="$active_apps Goto"
+	fi
+	if [ "$Zoom_in_meeting" = "true" ]; then
+		active_apps="$active_apps Zoom"
+	fi
+	if [ "$macOS_DnD_Focus_mode" = "true" ]; then
+		active_apps="$active_apps macOS DND/Focus"
+	fi
+	
+	if [ -n "$active_apps" ]; then
+		ScriptLogUpdate "[ Function-Check DDM ]: DND app found: $active_apps"
+		active_dnd="true"
+	else
+		ScriptLogUpdate "[ Function-Check DDM ]: No DND applications found"
+	fi
+}
+
+Check_DND_Status
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Enable BootstrapToken with currentUser  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 function Enable_BootstrapToken_with_currentUser() {
 	BootstrapToken_iconPath="/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns"
-	BootstrapToken_title_de="Fehlernder Bootstrap-Token"
-	secondTitlePassword_de="Gebe dein aktuelles macOS-Kennwort ein, mit dem Du dich auf deinem Gerät anmeldest."
-	Passcode_Field_de="Leider fehlt das Bootstrap-Token auf Deinem System. Wir werden es reaktivieren. Hierfür benötigen wir das Passwort. Bitte gebe Dein macOS-Passwort in das Feld ein."
-	mainButtonLabelPassword_de="Weiter"
-	passwordRegexErrorMessage_de="Das angegebene Passwort entspricht nicht den Anforderungen."
-	placeholderPassword_de="Passwort hier eingeben"
-	
-	BootstrapToken_title_en="Missing bootstrap token"
-	secondTitlePassword_en="Enter your current macOS password that you use to log in to your device."
-	Passcode_Field_en="Unfortunately, the bootstrap token is missing on your system. We will reactivate it. For this we need the password. Please enter your macOS password in the field."
-	mainButtonLabelPassword_en="Continue"
-	passwordRegexErrorMessage_en="The provided password does not meet the requirements."
-	placeholderPassword_en="Enter password here"
-	
-	BootstrapToken_title=BootstrapToken_title_${UserLanguage}
-	secondTitlePassword=secondTitlePassword_${UserLanguage}
-	Passcode_Field=Passcode_Field_${UserLanguage}
-	mainButtonLabelPassword=mainButtonLabelPassword_${UserLanguage}
-	passwordRegexErrorMessage=passwordRegexErrorMessage_${UserLanguage}
-	placeholderPassword=placeholderPassword_${UserLanguage}
-	
 	passwordRegex="^[^\s]{4,}$"
 	
 	maxAttempts=3
 	attempt=1
 	
 	while [ $attempt -le $maxAttempts ]; do
-		dialog=$("$dialog_bin" --title "${!BootstrapToken_title}" --message "${!Passcode_Field}" --button1text "${!mainButtonLabelPassword}" --icon "$BootstrapToken_iconPath" --textfield "${!secondTitlePassword}",prompt="${!placeholderPassword}",regex="$passwordRegex",regexerror="${!passwordRegexErrorMessage}",secure=true,required=yes)
+		dialog=$("$dialog_bin" --title "${BootstrapToken_title}" --message "${Passcode_Field}" --button1text "${mainButtonLabelPassword}" --icon "$BootstrapToken_iconPath" --textfield "${secondTitlePassword}",prompt="${placeholderPassword}",regex="$passwordRegex",regexerror="${passwordRegexErrorMessage}",secure=true,required=yes)
 		
-		userPass=$(echo "$dialog" | grep "${!secondTitlePassword}" | awk -F " : " '{print $NF}' &)
+		userPass=$(echo "$dialog" | grep "${secondTitlePassword}" | awk -F " : " '{print $NF}' &)
 		
 		/usr/bin/dscl /Search -authonly "$currentUser" "$userPass"
 		
@@ -453,13 +575,22 @@ function check_Bootstrap_Token_local_on_Device() {
 	
 	checkMDMService
 	Bootstrap_Token="false"
-	# ScriptLogUpdate "[ Function-Check Bootstrap Token ]: Checking the bootstrap token status local on the macOS"
+	ScriptLogUpdate "[ Function-Check Bootstrap Token ]: Checking the bootstrap token status local on the macOS"
 	if [[ $(profiles status -type bootstraptoken | grep -ic 'YES') -eq 2 ]]
 		then
 			Bootstrap_Token="true"
 		else
 			ScriptLogUpdate "[ Function-Check Bootstrap Token ]: Warning Bootstrap token is not escrowed to MDM Server"
-			Enable_BootstrapToken_with_currentUser
+			
+			if [ "$active_dnd" = "true" ]
+				then
+					ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is activated. The user will not be notified. Will try again on the next cycle"
+					killProcess "caffeinate"
+					exit 0
+				else
+					ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is not activated. Prompt the user to enable the bootstraptoken"
+					Enable_BootstrapToken_with_currentUser
+			fi
 	fi
 }
 
@@ -577,10 +708,10 @@ function get_macos_data_Sofa_feed() {
 	critical_Update_text=""
 	if [[ $latest_exploits -gt 0 ]]; then
 		critical_Update="true"
-		critical_Update_text="Critical Update"
+		critical_Update_text="${critical_Updatetext}"
 	fi
 	
-	Sofa_Infobox="CVEs: $latest_cves \n\nActiveExploits: $latest_exploits \n\n$critical_Update_text"
+	Sofa_Infobox="${CVEs_text}: $latest_cves \n\n${ActiveExploits_text}: $latest_exploits \n\n$critical_Update_text"
 	
 	unset macos_data_feed
 }
@@ -854,7 +985,7 @@ esac
 
 case ${debugMode} in
 	"true"      ) scriptVersion="DEBUG MODE | Dialog: v${dialogVersion} • DDM macOS Updates: v${scriptVersion}" ;;
-	"verbose"   ) scriptVersion="DEBUG MODE | Dialog: v${dialogVersion} • DDM macOS Updates: v${scriptVersion}" ;;
+	"verbose"   ) scriptVersion="Verbose MODE | Dialog: v${dialogVersion} • DDM macOS Updates: v${scriptVersion}" ;;
 	"false"     ) scriptVersion="DDM macOS Updates: v.${scriptVersion}" ;;
 esac
 
@@ -1290,7 +1421,16 @@ function get_Device_Informations_from_Jamf() {
 				then
 					if [[ "$bootstrap_status" != " ESCROWED" ]]; then
 						ScriptLogUpdate "[ Function-Get Device Informations ]: bootstrapTokenEscrowedStatus is not ESCROWED. Execute Enable_BootstrapToken_with_currentUser."
-						Enable_BootstrapToken_with_currentUser
+						
+						if [ "$active_dnd" = "true" ]
+						then
+							ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is activated. The user will not be notified. Will try again on the next cycle"
+							killProcess "caffeinate"
+							exit 0
+						else
+							ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is not activated. Prompt the user to enable the bootstraptoken"
+							Enable_BootstrapToken_with_currentUser
+						fi
 					fi
 				else
 					ScriptLogUpdate "[ Function-Get Device Informations ]: Error: Could not extract bootstrapTokenEscrowedStatus."
@@ -1792,156 +1932,151 @@ fi
 # # # # # # # # # # # # # # # # # # # # # # # # # Read Plist Variablen  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # * * * * * * * * * * * * * * * * * * * * * * * * Timers and values * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
-ScriptLogUpdate=$(/usr/libexec/PlistBuddy -c "Print :Messanges:MaxMessageTime" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || ScriptLogUpdate="300"
-buttontimer_Final_Message_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_Final_Message" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || buttontimer_Final_Message_Custom="15"
-
-# * * * * * * * * * * * * * * * * * * * * * * * * Test and Messages * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
-Install_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:InstallButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Install_Button_Custom="NOW"
-Defer_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:DeferButtonLabel" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Defer_Button_Custom="LATER"
-Defer_Button_Custom=$(echo -e "$Defer_Button_Custom")
-
-# * * * * * * * * * * * * * * * * * * * * * * * * SwiftDialog Window  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
-Dialog_update_width=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_width" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Dialog_update_width="740"
-Dialog_update_height=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_height" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Dialog_update_height="540"
-Dialog_update_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_titlefont" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Dialog_update_titlefont="20"
-Dialog_update_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_messagefont" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Dialog_update_messagefont="14"
-
-Standard_Update_Prompt=`/usr/libexec/PlistBuddy -c "Print :Messanges:StandardUpdatePrompt" /Library/Managed\ Preferences/${BundleIDPlist}.plist`
-Standard_Update_Prompt="$(echo -e "$Standard_Update_Prompt" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%Install_Button_Custom%/${Install_Button_Custom}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${Human_read_forceInstallLocalDateTime}/")"
-
-
-Banner_dialog="false"
-BannerImage=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:BannerImage" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || BannerImage=""
-if [[ -n "$BannerImage" ]]; then
-	Banner_dialog="true"
-fi
-
-
-Script_default_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Default_Icon:Script_default" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Script_default_icon="false"
-if [[ "$Script_default_icon" == "true" ]]
-	then
-		Custem_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Default_Icon:Custem_icon" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Custem_icon=""
-		if [[ -n "$Custem_icon" ]]
-			then
-				Icon="$Custem_icon"
-				ScriptLogUpdate "Using the managed value: $Icon"
-			else
-				ScriptLogUpdate "Value is set to managed, but no path is specified"
-				Icon="SF=gear.badge"
-		fi
-	else
-		Icon="SF=gear.badge"
-fi
-
-Dialog_overlayicon="false"
-Overlayicon_Self_Service_default=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_overlayicon:Self_Service_default" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Overlayicon_Self_Service_default="false"
-if [[ "$Overlayicon_Self_Service_default" == "true" ]]; then
-	Custem_overlay_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_overlayicon:Custem_overlay_icon" "/Library/Managed Preferences/${BundleIDPlist}.plist" 2>/dev/null) || Custem_overlay_icon=""
-	if [[ -n "$Custem_overlay_icon" ]]
+if [ "$Dialog_Silent_Mode" = "false" ]; then
+	
+	ScriptLogUpdate=$(/usr/libexec/PlistBuddy -c "Print :Messanges:MaxMessageTime" "$Managed_Preferences" 2>/dev/null) || ScriptLogUpdate="300"
+	buttontimer_Final_Message_Custom=$(/usr/libexec/PlistBuddy -c "Print :Buttontimer:buttontimer_Final_Message" "$Managed_Preferences" 2>/dev/null) || buttontimer_Final_Message_Custom="15"
+	
+	# * * * * * * * * * * * * * * * * * * * * * * * * Test and Messages * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+	Install_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:InstallButtonLabel" "$Managed_Preferences" 2>/dev/null) || Install_Button_Custom="NOW"
+	Defer_Button_Custom=$(/usr/libexec/PlistBuddy -c "Print :Messanges:DeferButtonLabel" "$Managed_Preferences" 2>/dev/null) || Defer_Button_Custom="LATER"
+	Defer_Button_Custom=$(echo -e "$Defer_Button_Custom")
+	
+	# * * * * * * * * * * * * * * * * * * * * * * * * SwiftDialog Window  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
+	Dialog_update_width=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_width" "$Managed_Preferences" 2>/dev/null) || Dialog_update_width="740"
+	Dialog_update_height=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_height" "$Managed_Preferences" 2>/dev/null) || Dialog_update_height="540"
+	Dialog_update_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_titlefont" "$Managed_Preferences" 2>/dev/null) || Dialog_update_titlefont="20"
+	Dialog_update_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_messagefont" "$Managed_Preferences" 2>/dev/null) || Dialog_update_messagefont="14"
+	
+	Standard_Update_Prompt=`/usr/libexec/PlistBuddy -c "Print :Messanges:StandardUpdatePrompt" "$Managed_Preferences"`
+	Standard_Update_Prompt="$(echo -e "$Standard_Update_Prompt" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%Install_Button_Custom%/${Install_Button_Custom}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${Human_read_forceInstallLocalDateTime}/")"
+	
+	
+	Banner_dialog="false"
+	BannerImage=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:BannerImage" "$Managed_Preferences" 2>/dev/null) || BannerImage=""
+	if [[ -n "$BannerImage" ]]; then
+		Banner_dialog="true"
+	fi
+	
+	
+	Script_default_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Default_Icon:Script_default" "$Managed_Preferences" 2>/dev/null) || Script_default_icon="false"
+	if [[ "$Script_default_icon" == "true" ]]
 		then
-			overlayicon="$Custem_overlay_icon"
-			ScriptLogUpdate "Using the profile-defined setting: $Custem_overlay_icon"
-			Dialog_overlayicon="true"
+			Custem_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Default_Icon:Custem_icon" "$Managed_Preferences" 2>/dev/null) || Custem_icon=""
+			if [[ -n "$Custem_icon" ]]
+				then
+					Icon="$Custem_icon"
+					ScriptLogUpdate "Using the managed value: $Icon"
+				else
+					ScriptLogUpdate "Value is set to managed, but no path is specified"
+					Icon="SF=gear.badge"
+			fi
 		else
-			ScriptLogUpdate "No custom overlay icon specified Use the Self Service default"
-			overlayicon="/Users/$currentUser/Library/Application Support/com.jamfsoftware.selfservice.mac/Documents/Images/brandingimage.png"
-			Dialog_overlayicon="true"
+			Icon="SF=gear.badge"
+	fi
+	
+	Dialog_overlayicon="false"
+	Overlayicon_Self_Service_default=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_overlayicon:Self_Service_default" "$Managed_Preferences" 2>/dev/null) || Overlayicon_Self_Service_default="false"
+	if [[ "$Overlayicon_Self_Service_default" == "true" ]]; then
+		Custem_overlay_icon=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_overlayicon:Custem_overlay_icon" "$Managed_Preferences" 2>/dev/null) || Custem_overlay_icon=""
+		if [[ -n "$Custem_overlay_icon" ]]
+			then
+				overlayicon="$Custem_overlay_icon"
+				ScriptLogUpdate "Using the profile-defined setting: $Custem_overlay_icon"
+				Dialog_overlayicon="true"
+			else
+				ScriptLogUpdate "No custom overlay icon specified Use the Self Service default"
+				overlayicon="/Users/$currentUser/Library/Application Support/com.jamfsoftware.selfservice.mac/Documents/Images/brandingimage.png"
+				Dialog_overlayicon="true"
+		fi
 	fi
 fi
 
-Device_Info_de="Geräteinformationen"
-Device_Info_en="Device information"
-
-Current_OS_de="Instal. macOS"
-Current_OS_en="Installed macOS"
-
-available_OS_de="neues Update"
-available_OS_en="new Update"
-
-CurrentDeferralValue_Text_de="Verschieb. übrig"
-CurrentDeferralValue_Text_en="Deferrals remaining"
-
-remainingDaysTitel_de="verbleibende Tage"
-remainingDaysTitel_en="remaining Days"
-
-remainingHourseTitel_de="verbleibende Stunden"
-remainingHourseTitel_en="remaining Hours"
-
-Device_Info=Device_Info_${UserLanguage}
-Current_OS=Current_OS_${UserLanguage}
-available_OS=available_OS_${UserLanguage}
-CurrentDeferralValue_Text=CurrentDeferralValue_Text_${UserLanguage}
-remainingDaysTitel=remainingDaysTitel_${UserLanguage}
-remainingHourseTitel=remainingHourseTitel_${UserLanguage}
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Create default Dialog Arguments # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-waitForActiveUser
 
-buttontimer=$buttontimer_Final_Message_Custom
-case ${debugMode} in
-	"false"     ) dialog_bin="${dialog_bin}" ;;
-	"true"      ) dialog_bin="${dialog_bin} --verbose" ;;
-	"verbose"   ) dialog_bin="${dialog_bin} --verbose --resizable --debug red" ;;
-esac
-
-[ "${Banner_dialog}" = "true" ] && dialog_bin="${dialog_bin} --bannerimage \"${BannerImage}\""
-[ "${Dialog_overlayicon}" = "true" ] && dialog_bin="${dialog_bin} --overlayicon \"${overlayicon}\""
-
-Promt_Dialog_to_User="$dialog_bin \
---moveable \
---ontop \
---quitkey f \
---position centre \
---alignment left \
---titlefont 'size=$Dialog_update_titlefont' \
---messagefont 'size=$Dialog_update_messagefont' \
---width $Dialog_update_width \
---height $Dialog_update_height \
---title \"macOS Softwareupdate\" \
---message \"$Standard_Update_Prompt\" \
---icon \"$Icon\" \
---iconsize 128 \
---button1text \"$Install_Button_Custom in $buttontimer\" \
---button1disabled \
---button2text \"$Defer_Button_Custom in $buttontimer\" \
---button2disabled \
---timer \"$ScriptLogUpdate\" \
---infobox \"_________________\n\n"${!Device_Info}"\n\n${!Current_OS}: $current_macOS \n\n${!available_OS}: $latest_updateVersion \n_________________\nUpdate Details \n\n$Sofa_Infobox\" \
---commandfile \"$dialog_log\" \
---infotext \"$scriptVersion\" \ "
-
-eval "${Promt_Dialog_to_User}" & sleep 0.1
-
-pid=$!
-
-while [ $buttontimer -gt 0 ];
-do
-	/bin/echo "button1text: $Install_Button_Custom in $buttontimer" >> $dialog_log
-	/bin/echo "button2text: $Defer_Button_Custom in $buttontimer" >> $dialog_log
-	let buttontimer=$buttontimer-1
-	sleep 1
-done
-
-/bin/echo "button1text: $Install_Button_Custom" >> $dialog_log
-/bin/echo "button1: enable" >> $dialog_log
-/bin/echo "button2text: $Defer_Button_Custom" >> $dialog_log
-/bin/echo "button2: enable" >> $dialog_log
-
-wait $pid 2>/dev/null && result=$? || result=2
-
-rm $dialog_log
-
-if [ $result -eq 2 ]
-	then
-		ScriptLogUpdate "Updates ${latest_updateVersion} available."
-		ScriptLogUpdate "User has moved the update."
-		killProcess "caffeinate"
-		exit 0
-		
-	else
-		ScriptLogUpdate "User has clicked on install."
-		updateCLI
-		killProcess "caffeinate"
-		exit 0
+if [ "$active_dnd" = "true" ] && [ "$Dialog_Silent_Mode" = "true" ]; then
+	ScriptLogUpdate "[ Function-Dialog Promt ]: Both values are activated. Dialog will not be displayed."
+	killProcess "caffeinate"
+	exit 0
+elif [ "$active_dnd" = "true" ]; then
+	ScriptLogUpdate "[ Function-Dialog Promt ]: DND set by an application or macOS. The user will receive neither a dialog nor any information. Information is handled by macOS."
+	killProcess "caffeinate"
+	exit 0
+elif [ "$Dialog_Silent_Mode" = "true" ]; then
+	ScriptLogUpdate "[ Function-Dialog Promt ]: Dialog has been disabled by the administrator in the configuration profile."
+	killProcess "caffeinate"
+	exit 0
+else
+	ScriptLogUpdate "[ Function-Dialog Promt ]: Dialog will be initiated."
+	waitForActiveUser
+	
+	buttontimer=$buttontimer_Final_Message_Custom
+	case ${debugMode} in
+		"false"     ) dialog_bin="${dialog_bin}" ;;
+		"true"      ) dialog_bin="${dialog_bin} --verbose" ;;
+		"verbose"   ) dialog_bin="${dialog_bin} --verbose --resizable --debug red" ;;
+	esac
+	
+	[ "${Banner_dialog}" = "true" ] && dialog_bin="${dialog_bin} --bannerimage \"${BannerImage}\""
+	[ "${Dialog_overlayicon}" = "true" ] && dialog_bin="${dialog_bin} --overlayicon \"${overlayicon}\""
+	
+	Promt_Dialog_to_User="$dialog_bin \
+	--moveable \
+	--ontop \
+	--quitkey f \
+	--position centre \
+	--alignment left \
+	--titlefont 'size=$Dialog_update_titlefont' \
+	--messagefont 'size=$Dialog_update_messagefont' \
+	--width $Dialog_update_width \
+	--height $Dialog_update_height \
+	--title \"${title}\" \
+	--message \"$Standard_Update_Prompt\" \
+	--icon \"$Icon\" \
+	--iconsize 128 \
+	--button1text \"$Install_Button_Custom in $buttontimer\" \
+	--button1disabled \
+	--button2text \"$Defer_Button_Custom in $buttontimer\" \
+	--button2disabled \
+	--timer \"$ScriptLogUpdate\" \
+	--infobox \"_________________\n\n"${Device_Info}"\n\n${Current_OS}: $current_macOS \n\n${available_OS}: $latest_updateVersion \n_________________\n${Update_Details_Titel} \n\n$Sofa_Infobox\" \
+	--commandfile \"$dialog_log\" \
+	--infotext \"$scriptVersion\" \ "
+	
+	eval "${Promt_Dialog_to_User}" & sleep 0.1
+	
+	pid=$!
+	
+	while [ $buttontimer -gt 0 ];
+	do
+		/bin/echo "button1text: $Install_Button_Custom in $buttontimer" >> $dialog_log
+		/bin/echo "button2text: $Defer_Button_Custom in $buttontimer" >> $dialog_log
+		let buttontimer=$buttontimer-1
+		sleep 1
+	done
+	
+	/bin/echo "button1text: $Install_Button_Custom" >> $dialog_log
+	/bin/echo "button1: enable" >> $dialog_log
+	/bin/echo "button2text: $Defer_Button_Custom" >> $dialog_log
+	/bin/echo "button2: enable" >> $dialog_log
+	
+	wait $pid 2>/dev/null && result=$? || result=2
+	
+	rm $dialog_log
+	
+	if [ $result -eq 2 ]
+		then
+			ScriptLogUpdate "Updates ${latest_updateVersion} available."
+			ScriptLogUpdate "User has moved the update."
+			killProcess "caffeinate"
+			exit 0
+			
+		else
+			ScriptLogUpdate "User has clicked on install."
+			killProcess "caffeinate"
+			updateCLI
+			exit 0
+	fi
 fi
