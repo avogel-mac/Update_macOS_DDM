@@ -209,8 +209,819 @@
           "default": "14",
           "description": "Font size for the text; if not specified, the default value from the script is used.",
           "type": "string"
+        },
+        "Dialog_Silent_Mode": {
+          "title": "Dialog Silent Mode",
+          "default": false,
+          "description": "Enable or disable silent mode for the dialog.",
+          "type": "boolean"
+        },
+        "Localized_Texts": {
+          "title": "Localized Texts",
+          "description": "For each text field you can either select a predefined text from the dropdown (Default Text) or enter your own custom text (Custom Text). If no text is selected or no text is entered, standard text is set in the script.",
+          "type": "object",
+          "properties": {
+            "BootstrapToken_title": {
+              "title": "Bootstrap Token Title",
+              "description": "Title for the window if the bootstap token should be missing",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Fehlender Bootstrap-Token",
+                    "Missing Bootstrap Token",
+                    "Token Bootstrap manquant",
+                    "Token Bootstrap faltante",
+                    "Token Bootstrap mancante",
+                    "Token Bootstrap ausente",
+                    "Ontbrekende Bootstrap-token",
+                    "Saknad Bootstrap-token",
+                    "Mangler Bootstrap-token",
+                    "Puuttuva Bootstrap-token",
+                    "Brakujący token Bootstrap",
+                    "Chybějící bootstrap token",
+                    "Chýbajúci bootstrap token",
+                    "Hiányzó Bootstrap-token",
+                    "Token Bootstrap lipsă",
+                    "Липсващ Bootstrap-токен",
+                    "Отсутствующий Bootstrap-токен"
+                  ],
+                  "default": "Fehlender Bootstrap-Token"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Fehlender Bootstrap-Token",
+                      "Missing Bootstrap Token",
+                      "Token Bootstrap manquant",
+                      "Token Bootstrap faltante",
+                      "Token Bootstrap mancante",
+                      "Token Bootstrap ausente",
+                      "Ontbrekende Bootstrap-token",
+                      "Saknad Bootstrap-token",
+                      "Mangler Bootstrap-token",
+                      "Puuttuva Bootstrap-token",
+                      "Brakujący token Bootstrap",
+                      "Chybějící bootstrap token",
+                      "Chýbajúci bootstrap token",
+                      "Hiányzó Bootstrap-token",
+                      "Token Bootstrap lipsă",
+                      "Липсващ Bootstrap-токен",
+                      "Отсутствующий Bootstrap-токен"
+                    ]
+                  }
+                }
+              ]
+            },
+            "secondTitlePassword": {
+              "title": "Second Title Password",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Gebe dein aktuelles macOS-Kennwort ein, mit dem Du dich auf deinem Gerät anmeldest.",
+                    "Enter your current macOS password used to log in to your device.",
+                    "Saisissez votre mot de passe macOS actuel que vous utilisez pour vous connecter à votre appareil.",
+                    "Introduce tu contraseña actual de macOS con la que inicias sesión en tu dispositivo.",
+                    "Inserisci la tua password attuale di macOS con cui accedi al tuo dispositivo.",
+                    "Digite sua senha atual do macOS com a qual você faz login no seu dispositivo.",
+                    "Voer je huidige macOS-wachtwoord in waarmee je op je apparaat inlogt.",
+                    "Ange ditt aktuella macOS-lösenord som du använder för att logga in på din enhet.",
+                    "Indtast din nuværende macOS-adgangskode, som du bruger til at logge ind på din enhed.",
+                    "Skriv inn ditt nåværende macOS-passord som du bruker for å logge inn på enheten din.",
+                    "Syötä nykyinen macOS-salasanasi, jolla kirjaudut laitteellesi.",
+                    "Wprowadź swoje aktualne hasło macOS, którego używasz do logowania się på urządzeniu.",
+                    "Zadejte své aktuální macOS heslo, kterým se přihlašujete do svého zařízení.",
+                    "Zadajte svoje aktuálne macOS heslo, ktorým sa prihlasujete do svojho zariadenia.",
+                    "Írd be a jelenlegi macOS jelszavadat, amellyel bejelentkezel az eszközödre.",
+                    "Introduceți parola curentă de macOS cu care vă conectați la dispozitivul dvs.",
+                    "Въведете текущата си macOS парола, с която влизате в устройството си.",
+                    "Введите ваш текущий пароль macOS, с которым вы входите в систему на вашем устройстве."
+                  ],
+                  "default": "Gebe dein aktuelles macOS-Kennwort ein, mit dem Du dich auf deinem Gerät anmeldest."
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Gebe dein aktuelles macOS-Kennwort ein, mit dem Du dich auf deinem Gerät anmeldest.",
+                      "Enter your current macOS password used to log in to your device.",
+                      "Saisissez votre mot de passe macOS actuel que vous utilisez pour vous connecter à votre appareil.",
+                      "Introduce tu contraseña actual de macOS con la que inicias sesión en tu dispositivo.",
+                      "Inserisci la tua password attuale di macOS con cui accedi al tuo dispositivo.",
+                      "Digite sua senha atual do macOS com a qual você faz login no seu dispositivo.",
+                      "Voer je huidige macOS-wachtwoord in waarmee je op je apparaat inlogt.",
+                      "Ange ditt aktuella macOS-lösenord som du använder för att logga in på din enhet.",
+                      "Indtast din nuværende macOS-adgangskode, som du bruger til at logge ind på din enhed.",
+                      "Skriv inn ditt nåværende macOS-passord som du bruker for å logge inn på enheten din.",
+                      "Syötä nykyinen macOS-salasanasi, jolla kirjaudut laitteellesi.",
+                      "Wprowadź swoje aktualne hasło macOS, którego używasz do logowania się på urządzeniu.",
+                      "Zadejte své aktuální macOS heslo, kterým se přihlašujete do svého zařízení.",
+                      "Zadajte svoje aktuálne macOS heslo, ktorým sa prihlasujete do svojho zariadenia.",
+                      "Írd be a jelenlegi macOS jelszavadat, amellyel bejelentkezel az eszközödre.",
+                      "Introduceți parola curentă de macOS cu care vă conectați la dispozitivul dvs.",
+                      "Въведете текущата си macOS парола, с която влизате в устройството си.",
+                      "Введите ваш текущий пароль macOS, с которым вы входите в систему на вашем устройстве."
+                    ]
+                  }
+                }
+              ]
+            },
+            "Passcode_Field": {
+              "title": "Passcode Field",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Leider fehlt das Bootstrap-Token auf Deinem System. Wir werden es reaktivieren. Hierfür benötigen wir das Passwort. Bitte gebe Dein macOS-Passwort in das Feld ein.",
+                    "Unfortunately, the bootstrap token is missing on your system. We will reactivate it. For this, we need the password. Please enter your macOS password in the field.",
+                    "Malheureusement, le jeton Bootstrap est absent de votre système. Nous allons le réactiver. Pour cela, nous avons besoin du mot de passe. Veuillez saisir votre mot de passe macOS dans le champ.",
+                    "Lamentablemente, falta el token Bootstrap en tu sistema. Lo reactivaremos. Para ello, necesitamos la contraseña. Por favor, introduce tu contraseña de macOS en el campo.",
+                    "Purtroppo, il token Bootstrap manca nel tuo sistema. Lo riattiveremo. Per questo, abbiamo bisogno della password. Per favore, inserisci la tua password macOS nel campo.",
+                    "Infelizmente, o token Bootstrap está ausente no seu sistema. Iremos reativá-lo. Para isso, precisamos da senha. Por favor, digite sua senha do macOS no campo.",
+                    "Helaas ontbreekt de Bootstrap-token op je systeem. We zullen deze reactiveren. Hiervoor hebben we het wachtwoord nodig. Voer je macOS-wachtwoord in het veld in.",
+                    "Tyvärr saknas Bootstrap-token på ditt system. Vi kommer att återaktivera den. För detta behöver vi lösenordet. Vänligen ange ditt macOS-lösenord i fältet.",
+                    "Desværre mangler Bootstrap-token på dit system. Vi vil reaktivere den. Til dette har vi brug for adgangskoden. Indtast venligst din macOS-adgangskode i feltet.",
+                    "Dessverre mangler Bootstrap-token på systemet ditt. Vi vil reaktivere den. For dette trenger vi passordet. Vennligst skriv inn macOS-passordet ditt i feltet.",
+                    "Valitettavasti bootstrap-tunnus puuttuu järjestelmästäsi. Aktivoimme sen uudelleen. Tarvitsemme tätä varten salasanan. Syötä macOS-salasanasi kenttään.",
+                    "Niestety, token Bootstrap brakuje w Twoim systemie. Aktywujemy go ponownie. W tym celu potrzebujemy hasła. Proszę, wprowadź swoje hasło macOS w pole.",
+                    "Bohužel, bootstrap token chybí ve vašem systému. Znovu jej aktivujeme. K tomu potřebujeme heslo. Prosím, zadejte své macOS heslo do pole.",
+                    "Bohužiaľ, bootstrap token chýba vo vašom systéme. Znovu ho aktivujeme. Na to potrebujeme heslo. Prosím, zadajte svoje macOS heslo do poľa.",
+                    "Sajnos a bootstrap token hiányzik a rendszeredből. Újra aktiváljuk. Ehhez szükségünk van a jelszóra. Kérjük, írd be a macOS jelszavadat a mezőbe.",
+                    "Din păcate, token-ul Bootstrap lipsește din sistemul tău. Îl vom reactiva. Pentru aceasta, avem nevoie de parolă. Te rugăm să introduci parola ta macOS în câmp.",
+                    "За съжаление, Bootstrap токенът липсва в системата ти. Ще го реактивираме. За това ни е необходима паролата. Моля, въведете вашата macOS парола в полето.",
+                    "К сожалению, на вашей системе отсутствует bootstrap-токен. Мы его активируем заново. Для этого нам нужен пароль. Пожалуйста, введите ваш macOS-пароль в поле."
+                  ],
+                  "default": "Leider fehlt das Bootstrap-Token auf Deinem System. Wir werden es reaktivieren. Hierfür benötigen wir das Passwort. Bitte gebe Dein macOS-Passwort in das Feld ein."
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Leider fehlt das Bootstrap-Token auf Deinem System. Wir werden es reaktivieren. Hierfür benötigen wir das Passwort. Bitte gebe Dein macOS-Passwort in das Feld ein.",
+                      "Unfortunately, the bootstrap token is missing on your system. We will reactivate it. For this, we need the password. Please enter your macOS password in the field.",
+                      "Malheureusement, le jeton Bootstrap est absent de votre système. Nous allons le réactiver. Pour cela, nous avons besoin du mot de passe. Veuillez saisir votre mot de passe macOS dans le champ.",
+                      "Lamentablemente, falta el token Bootstrap en tu sistema. Lo reactivaremos. Para ello, necesitamos la contraseña. Por favor, introduce tu contraseña de macOS en el campo.",
+                      "Purtroppo, il token Bootstrap manca nel tuo sistema. Lo riattiveremo. Per questo, abbiamo bisogno della password. Per favore, inserisci la tua password macOS nel campo.",
+                      "Infelizmente, o token Bootstrap está ausente no seu sistema. Iremos reativá-lo. Para isso, precisamos da senha. Por favor, digite sua senha do macOS no campo.",
+                      "Helaas ontbreekt de Bootstrap-token op je systeem. We zullen deze reactiveren. Hiervoor hebben we het wachtwoord nodig. Voer je macOS-wachtwoord in het veld in.",
+                      "Tyvärr saknas Bootstrap-token på ditt system. Vi kommer att återaktivera den. För detta behöver vi lösenordet. Vänligen ange ditt macOS-lösenord i fältet.",
+                      "Desværre mangler Bootstrap-token på dit system. Vi vil reaktivere den. Til dette har vi brug for adgangskoden. Indtast venligst din macOS-adgangskode i feltet.",
+                      "Dessverre mangler Bootstrap-token på systemet ditt. Vi vil reaktivere den. For dette trenger vi passordet. Vennligst skriv inn macOS-passordet ditt i feltet.",
+                      "Valitettavasti bootstrap-tunnus puuttuu järjestelmästäsi. Aktivoimme sen uudelleen. Tarvitsemme tätä varten salasanan. Syötä macOS-salasanasi kenttään.",
+                      "Niestety, token Bootstrap brakuje w Twoim systemie. Aktywujemy go ponownie. W tym celu potrzebujemy hasła. Proszę, wprowadź swoje hasło macOS w pole.",
+                      "Bohužel, bootstrap token chybí ve vašem systému. Znovu jej aktivujeme. K tomu potřebujeme heslo. Prosím, zadejte své macOS heslo do pole.",
+                      "Bohužiaľ, bootstrap token chýba vo vašom systéme. Znovu ho aktivujeme. Na to potrebujeme heslo. Prosím, zadajte svoje macOS heslo do poľa.",
+                      "Sajnos a bootstrap token hiányzik a rendszeredből. Újra aktiváljuk. Ehhez szükségünk van a jelszóra. Kérjük, írd be a macOS jelszavadat a mezőbe.",
+                      "Din păcate, token-ul Bootstrap lipsește din sistemul tău. Îl vom reactiva. Pentru aceasta, avem nevoie de parolă. Te rugăm să introduci parola ta macOS în câmp.",
+                      "За съжаление, Bootstrap токенът липсва в системата ти. Ще го реактивираме. За това ни е необходима паролата. Моля, въведете вашата macOS парола в полето.",
+                      "К сожалению, на вашей системе отсутствует bootstrap-токен. Мы его активируем заново. Для этого нам нужен пароль. Пожалуйста, введите ваш macOS-пароль в поле."
+                    ]
+                  }
+                }
+              ]
+            },
+            "mainButtonLabelPassword": {
+              "title": "Main Button Label Password",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Weiter",
+                    "Continue",
+                    "Continuer",
+                    "Continuar",
+                    "Continua",
+                    "Continuar",
+                    "Doorgaan",
+                    "Fortsätt",
+                    "Fortsæt",
+                    "Fortsett",
+                    "Jatka",
+                    "Dalej",
+                    "Pokračovat",
+                    "Pokračovať",
+                    "Tovább",
+                    "Continuă",
+                    "Продължи",
+                    "Далее"
+                  ],
+                  "default": "Weiter"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Weiter",
+                      "Continue",
+                      "Continuer",
+                      "Continuar",
+                      "Continua",
+                      "Continuar",
+                      "Doorgaan",
+                      "Fortsätt",
+                      "Fortsæt",
+                      "Fortsett",
+                      "Jatka",
+                      "Dalej",
+                      "Pokračovat",
+                      "Pokračovať",
+                      "Tovább",
+                      "Continuă",
+                      "Продължи",
+                      "Далее"
+                    ]
+                  }
+                }
+              ]
+            },
+            "passwordRegexErrorMessage": {
+              "title": "Password Regex Error Message",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Das angegebene Passwort entspricht nicht den Anforderungen.",
+                    "The specified password does not meet the requirements.",
+                    "Le mot de passe spécifié ne répond pas aux exigences.",
+                    "La contraseña especificada no cumple con los requisitos.",
+                    "La password specificata non soddisfa i requisiti.",
+                    "A senha especificada não atende aos requisitos.",
+                    "Het opgegeven wachtwoord voldoet niet aan de vereisten.",
+                    "Det angivna lösenordet uppfyller inte kraven.",
+                    "Det angivne kodeord opfylder ikke kravene.",
+                    "Det angitte passordet oppfyller ikke kravene.",
+                    "Annettu salasana ei täytä vaatimuksia.",
+                    "Podane hasło nie spełnia wymagań.",
+                    "Zadané heslo nesplňuje požadavky.",
+                    "Zadané heslo nespĺňa požiadavky.",
+                    "A megadott jelszó nem felel meg a követelményeknek.",
+                    "Parola specificată nu îndeplinește cerințele.",
+                    "Посочената парола не отговаря на изискванията.",
+                    "Указанный пароль не соответствует требованиям."
+                  ],
+                  "default": "Das angegebene Passwort entspricht nicht den Anforderungen."
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Das angegebene Passwort entspricht nicht den Anforderungen.",
+                      "The specified password does not meet the requirements.",
+                      "Le mot de passe spécifié ne répond pas aux exigences.",
+                      "La contraseña especificada no cumple con los requisitos.",
+                      "La password specificata non soddisfa i requisiti.",
+                      "A senha especificada não atende aos requisitos.",
+                      "Het opgegeven wachtwoord voldoet niet aan de vereisten.",
+                      "Det angivna lösenordet uppfyller inte kraven.",
+                      "Det angivne kodeord opfylder ikke kravene.",
+                      "Det angitte passordet oppfyller ikke kravene.",
+                      "Annettu salasana ei täytä vaatimuksia.",
+                      "Podane hasło nie spełnia wymagań.",
+                      "Zadané heslo nesplňuje požadavky.",
+                      "Zadané heslo nespĺňa požiadavky.",
+                      "A megadott jelszó nem felel meg a követelményeknek.",
+                      "Parola specificată nu îndeplinește cerințele.",
+                      "Посочената парола не отговаря на изискванията.",
+                      "Указанный пароль не соответствует требованиям."
+                    ]
+                  }
+                }
+              ]
+            },
+            "placeholderPassword": {
+              "title": "Placeholder Password",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Passwort hier eingeben",
+                    "Enter password here",
+                    "Entrez le mot de passe ici",
+                    "Ingrese la contraseña aquí",
+                    "Inserisci la password qui",
+                    "Digite a senha aqui",
+                    "Voer hier het wachtwoord in",
+                    "Ange lösenord här",
+                    "Indtast adgangskode her",
+                    "Skriv inn passord her",
+                    "Syötä salasana tähän",
+                    "Wpisz tutaj hasło",
+                    "Zadejte zde heslo",
+                    "Zadajte tu heslo",
+                    "Írd be ide a jelszót",
+                    "Introduceți parola aici",
+                    "Въведете паролата тук",
+                    "Введите пароль здесь"
+                  ],
+                  "default": "Passwort hier eingeben"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Passwort hier eingeben",
+                      "Enter password here",
+                      "Entrez le mot de passe ici",
+                      "Ingrese la contraseña aquí",
+                      "Inserisci la password qui",
+                      "Digite a senha aqui",
+                      "Voer hier het wachtwoord in",
+                      "Ange lösenord här",
+                      "Indtast adgangskode her",
+                      "Skriv inn passord her",
+                      "Syötä salasana tähän",
+                      "Wpisz tutaj hasło",
+                      "Zadejte zde heslo",
+                      "Zadajte tu heslo",
+                      "Írd be ide a jelszót",
+                      "Introduceți parola aici",
+                      "Въведете паролата тук",
+                      "Введите пароль здесь"
+                    ]
+                  }
+                }
+              ]
+            },
+            "Device_Info": {
+              "title": "Device Information",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Geräteinformationen",
+                    "Device information",
+                    "Informations sur l'appareil",
+                    "Información del dispositivo",
+                    "Informazioni sul dispositivo",
+                    "Informações do dispositivo",
+                    "Apparaatinformatie",
+                    "Enhetsinformation",
+                    "Enhedsinformation",
+                    "Enhetsinformasjon",
+                    "Laitetiedot",
+                    "Informacje o urządzeniu",
+                    "Informace o zařízení",
+                    "Informácie o zariadení",
+                    "Eszközinformációk",
+                    "Informații despre dispozitiv",
+                    "Информация за устройството",
+                    "Информация об устройстве"
+                  ],
+                  "default": "Geräteinformationen"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Geräteinformationen",
+                      "Device information",
+                      "Informations sur l'appareil",
+                      "Información del dispositivo",
+                      "Informazioni sul dispositivo",
+                      "Informações do dispositivo",
+                      "Apparaatinformatie",
+                      "Enhetsinformation",
+                      "Enhedsinformation",
+                      "Enhetsinformasjon",
+                      "Laitetiedot",
+                      "Informacje o urządzeniu",
+                      "Informace o zařízení",
+                      "Informácie o zariadení",
+                      "Eszközinformációk",
+                      "Informații despre dispozitiv",
+                      "Информация за устройството",
+                      "Информация об устройстве"
+                    ]
+                  }
+                }
+              ]
+            },
+            "Current_OS": {
+              "title": "Current macOS",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Installiertes macOS",
+                    "Installed macOS",
+                    "macOS installé",
+                    "macOS instalado",
+                    "macOS installato",
+                    "macOS instalado",
+                    "Geïnstalleerd macOS",
+                    "Installerat macOS",
+                    "Installeret macOS",
+                    "Installert macOS",
+                    "Asennettu macOS",
+                    "Zainstalowany macOS",
+                    "Nainstalovaný macOS",
+                    "Nainštalovaný macOS",
+                    "Telepített macOS",
+                    "macOS instalat",
+                    "Инсталиран macOS",
+                    "Установленный macOS"
+                  ],
+                  "default": "Installiertes macOS"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Installiertes macOS",
+                      "Installed macOS",
+                      "macOS installé",
+                      "macOS instalado",
+                      "macOS installato",
+                      "macOS instalado",
+                      "Geïnstalleerd macOS",
+                      "Installerat macOS",
+                      "Installeret macOS",
+                      "Installert macOS",
+                      "Asennettu macOS",
+                      "Zainstalowany macOS",
+                      "Nainstalovaný macOS",
+                      "Nainštalovaný macOS",
+                      "Telepített macOS",
+                      "macOS instalat",
+                      "Инсталиран macOS",
+                      "Установленный macOS"
+                    ]
+                  }
+                }
+              ]
+            },
+            "available_OS": {
+              "title": "Available OS",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "neues Update",
+                    "new update",
+                    "nouvelle mise à jour",
+                    "nueva actualización",
+                    "nuovo aggiornamento",
+                    "nova atualização",
+                    "nieuwe update",
+                    "ny uppdatering",
+                    "ny opdatering",
+                    "ny oppdatering",
+                    "uusi päivitys",
+                    "nowa aktualizacja",
+                    "nová aktualizace",
+                    "nová aktualizácia",
+                    "új frissítés",
+                    "actualizare nouă",
+                    "nova актуализация",
+                    "новое обновление"
+                  ],
+                  "default": "neues Update"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "neues Update",
+                      "new update",
+                      "nouvelle mise à jour",
+                      "nueva actualización",
+                      "nuovo aggiornamento",
+                      "nova atualização",
+                      "nieuwe update",
+                      "ny uppdatering",
+                      "ny opdatering",
+                      "ny oppdatering",
+                      "uusi päivitys",
+                      "nowa aktualizacja",
+                      "nová aktualizace",
+                      "nová aktualizácia",
+                      "új frissítés",
+                      "actualizare nouă",
+                      "nova актуализация",
+                      "новое обновление"
+                    ]
+                  }
+                }
+              ]
+            },
+            "title": {
+              "title": "Title",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "macOS Softwareupdate",
+                    "macOS Software Update",
+                    "mise à jour logicielle macOS",
+                    "actualización de software macOS",
+                    "aggiornamento software macOS",
+                    "atualização de software macOS",
+                    "macOS software-update",
+                    "macOS-programuppdatering",
+                    "macOS softwareopdatering",
+                    "macOS programvareoppdatering",
+                    "macOS-ohjelmistopäivitys",
+                    "aktualizacja oprogramowania macOS",
+                    "aktualizace softwaru macOS",
+                    "aktualizácia softvéru macOS",
+                    "macOS szoftverfrissítés",
+                    "actualizare software macOS",
+                    "актуализация на софтуера macOS",
+                    "обновление программного обеспечения macOS"
+                  ],
+                  "default": "macOS Softwareupdate"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "macOS Softwareupdate",
+                      "macOS Software Update",
+                      "mise à jour logicielle macOS",
+                      "actualización de software macOS",
+                      "aggiornamento software macOS",
+                      "atualização de software macOS",
+                      "macOS software-update",
+                      "macOS-programuppdatering",
+                      "macOS softwareopdatering",
+                      "macOS programvareoppdatering",
+                      "macOS-ohjelmistopäivitys",
+                      "aktualizacja oprogramowania macOS",
+                      "aktualizace softwaru macOS",
+                      "aktualizácia softvéru macOS",
+                      "macOS szoftverfrissítés",
+                      "actualizare software macOS",
+                      "актуализация на софтуера macOS",
+                      "обновление программного обеспечения macOS"
+                    ]
+                  }
+                }
+              ]
+            },
+            "Update_Details_Titel": {
+              "title": "Update Details Title",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Aktualisierungsdetails",
+                    "Update Details",
+                    "Détails de la mise à jour",
+                    "Detalles de la actualización",
+                    "Dettagli dell'aggiornamento",
+                    "Detalhes da atualização",
+                    "Update details",
+                    "Uppdateringsdetaljer",
+                    "Opdateringsdetaljer",
+                    "Oppdateringsdetaljer",
+                    "Päivityksen tiedot",
+                    "Szczegóły aktualizacji",
+                    "Podrobnosti aktualizace",
+                    "Podrobnosti aktualizácie",
+                    "Frissítési részletek",
+                    "Detalii actualizare",
+                    "Детайли за актуализация",
+                    "Подробности обновления"
+                  ],
+                  "default": "Aktualisierungsdetails"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Aktualisierungsdetails",
+                      "Update Details",
+                      "Détails de la mise à jour",
+                      "Detalles de la actualización",
+                      "Dettagli dell'aggiornamento",
+                      "Detalhes da atualização",
+                      "Update details",
+                      "Uppdateringsdetaljer",
+                      "Opdateringsdetaljer",
+                      "Oppdateringsdetaljer",
+                      "Päivityksen tiedot",
+                      "Szczegóły aktualizacji",
+                      "Podrobnosti aktualizace",
+                      "Podrobnosti aktualizácie",
+                      "Frissítési részletek",
+                      "Detalii actualizare",
+                      "Детайли за актуализация",
+                      "Подробности обновления"
+                    ]
+                  }
+                }
+              ]
+            },
+            "critical_Updatetext": {
+              "title": "Critical Update Text",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Kritisches Update",
+                    "Critical Update",
+                    "Mise à jour critique",
+                    "Actualización crítica",
+                    "Aggiornamento critico",
+                    "Atualização crítica",
+                    "Kritieke update",
+                    "Kritisk uppdatering",
+                    "Kritisk opdatering",
+                    "Kritisk oppdatering",
+                    "Kriittinen päivitys",
+                    "Krytyczna aktualizacja",
+                    "Kritická aktualizace",
+                    "Kritická aktualizácia",
+                    "Kritikus frissítés",
+                    "Actualizare critică",
+                    "Критично обновление",
+                    "Критическое обновление"
+                  ],
+                  "default": "Kritisches Update"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Kritisches Update",
+                      "Critical Update",
+                      "Mise à jour critique",
+                      "Actualización crítica",
+                      "Aggiornamento critico",
+                      "Atualização crítica",
+                      "Kritieke update",
+                      "Kritisk uppdatering",
+                      "Kritisk opdatering",
+                      "Kritisk oppdatering",
+                      "Kriittinen päivitys",
+                      "Krytyczna aktualizacja",
+                      "Kritická aktualizace",
+                      "Kritická aktualizácia",
+                      "Kritikus frissítés",
+                      "Actualizare critică",
+                      "Критично обновление",
+                      "Критическое обновление"
+                    ]
+                  }
+                }
+              ]
+            },
+            "CVEs_text": {
+              "title": "CVEs Text",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Behobene Schwachstellen",
+                    "Fixed vulnerabilities",
+                    "Vulnérabilités corrigées",
+                    "Vulnerabilidades corregidas",
+                    "Vulnerabilità risolte",
+                    "Vulnerabilidades corrigidas",
+                    "Verholpen kwetsbaarheden",
+                    "Åtgärdade sårbarheter",
+                    "Udbedrede sårbarheder",
+                    "Fikset sårbarheder",
+                    "Korjatut haavoittuvuudet",
+                    "Naprawione luki bezpieczeństwa",
+                    "Opravené zranitelnosti",
+                    "Opravené zraniteľnosti",
+                    "Javított sebezhetőségek",
+                    "Vulnerabilități remediatate",
+                    "Отстранени уязвимости",
+                    "Исправленные уязвимости"
+                  ],
+                  "default": "Behobene Schwachstellen"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Behobene Schwachstellen",
+                      "Fixed vulnerabilities",
+                      "Vulnérabilités corrigées",
+                      "Vulnerabilidades corregidas",
+                      "Vulnerabilità risolte",
+                      "Vulnerabilidades corrigidas",
+                      "Verholpen kwetsbaarheden",
+                      "Åtgärdade sårbarheter",
+                      "Udbedrede sårbarheder",
+                      "Fikset sårbarheder",
+                      "Korjatut haavoittuvuudet",
+                      "Naprawione luki bezpieczeństwa",
+                      "Opravené zranitelnosti",
+                      "Opravené zraniteľnosti",
+                      "Javított sebezhetőségek",
+                      "Vulnerabilități remediatate",
+                      "Отстранени уязвимости",
+                      "Исправленные уязвимости"
+                    ]
+                  }
+                }
+              ]
+            },
+            "ActiveExploits_text": {
+              "title": "Active Exploits Text",
+              "description": "Select a predefined text or enter your own text.",
+              "oneOf": [
+                {
+                  "title": "Default Text",
+                  "type": "string",
+                  "enum": [
+                    "Aktiv ausgenutzte Sicherheitslücken",
+                    "Actively exploited security vulnerabilities",
+                    "Vulnérabilités de sécurité activement exploitées",
+                    "Vulnerabilidades de seguridad activamente explotadas",
+                    "Vulnerabilità di sicurezza attivamente sfruttate",
+                    "Vulnerabilidades de segurança ativamente exploradas",
+                    "Actief misbruikte beveiligingslekken",
+                    "Aktivt utnyttjade säkerhetsbrister",
+                    "Aktivt udnyttede sikkerhedshuller",
+                    "Aktivt utnyttede sikkerhetshull",
+                    "Aktiivisesti hyväksikäytetyt tietoturva-aukot",
+                    "Aktywnie wykorzystywane luki w zabezpieczeniach",
+                    "Aktivně zneužívané bezpečnostní mezery",
+                    "Aktívne zneužívané bezpečnostné slabiny",
+                    "Aktívan kihasznált biztonsági rések",
+                    "Vulnerabilități de securitate exploatate activ",
+                    "Активно експлоатирани уязвимости",
+                    "Активно эксплуатируемые уязвимости в безопасности"
+                  ],
+                  "default": "Aktiv ausgenutzte Sicherheitslücken"
+                },
+                {
+                  "title": "Custom Text",
+                  "type": "string",
+                  "not": {
+                    "enum": [
+                      "Aktiv ausgenutzte Sicherheitslücken",
+                      "Actively exploited security vulnerabilities",
+                      "Vulnérabilités de sécurité activement exploitées",
+                      "Vulnerabilidades de seguridad activamente explotadas",
+                      "Vulnerabilità di sicurezza attivamente sfruttate",
+                      "Vulnerabilidades de segurança ativamente exploradas",
+                      "Actief misbruikte beveiligingslekken",
+                      "Aktivt utnyttjade säkerhetsbrister",
+                      "Aktivt udnyttede sikkerhedshuller",
+                      "Aktivt utnyttede sikkerhetshull",
+                      "Aktiivisesti hyväksikäytetyt tietoturva-aukot",
+                      "Aktywnie wykorzystywane luki w zabezpieczeniach",
+                      "Aktivně zneužívané bezpečnostní mezery",
+                      "Aktívne zneužívané bezpečnostné slabiny",
+                      "Aktívan kihasznált biztonsági rések",
+                      "Vulnerabilități de securitate exploatate activ",
+                      "Активно експлоатирани уязвимости",
+                      "Активно эксплуатируемые уязвимости в безопасности"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
     },
     "Buttontimer": {
       "description": "To ensure the user has enough time to read the message without accidentally clicking the buttons, they are deactivated for a specified time and only reactivated after that period. This time (in seconds) can be adjusted for the various windows. If no values are set via the profile, the default values from the script will be used.",
@@ -254,5 +1065,6 @@
         }
       }
     }
-  }
+  },
+  "additionalProperties": false
 }
