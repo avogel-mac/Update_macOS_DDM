@@ -173,6 +173,7 @@ ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * START LOG * * *
 if [[ $(id -u) -ne 0 ]]; then
 	ScriptLogUpdate "This script must be run as root; exiting."
 	killProcess "caffeinate"
+	rm -rf $dialog_log
 	exit 1
 fi
 
@@ -249,6 +250,7 @@ Jamf_Pro_URL="https://$(echo "$profilesSTATUS" | grep 'MDM server' | awk -F '/' 
 if [[ -z "$Jamf_Pro_URL" ]]; then
 	echo "Jamf Pro URL is missing."
 	killProcess "caffeinate"
+	rm -rf $dialog_log
 	exit 1
 fi
 
@@ -282,6 +284,7 @@ if [[ -z "$jamf_api_client" ]]; then
 		ScriptLogUpdate "[ Function-Check Jamf API ]: Jamf Pro Client Secret is missing"
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 fi
@@ -297,6 +300,7 @@ if [[ -z "$jamf_api_secret" ]]; then
 		ScriptLogUpdate "[ Function-Check Jamf API ]: Jamf Pro Client Secret is missing"
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 fi
@@ -331,6 +335,7 @@ function dialogInstall() {
 			ScriptLogUpdate "[ Function-Check SwiftDialog ]: swiftDialog could not be installed"
 			/bin/rm -Rf "$tempDirectory"
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 	fi
 	/bin/rm -Rf "$tempDirectory"
@@ -487,6 +492,7 @@ function Enable_BootstrapToken_with_currentUser() {
 		ScriptLogUpdate "[ Function-activate the bootstrap token ]: User has repeatedly entered the wrong password. "
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
@@ -512,6 +518,7 @@ function Enable_BootstrapToken_with_currentUser() {
 			fi
 			ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 			
 		else
@@ -586,6 +593,7 @@ function check_Bootstrap_Token_local_on_Device() {
 				then
 					ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is activated. The user will not be notified. Will try again on the next cycle"
 					killProcess "caffeinate"
+					rm -rf $dialog_log
 					exit 0
 				else
 					ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is not activated. Prompt the user to enable the bootstraptoken"
@@ -618,12 +626,14 @@ then
 				ScriptLogUpdate "[ Function-Check macOS prerequisites ]: The installed macOS: $current_macOS does not support DDM."
 				"# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 				killProcess "caffeinate"
+				rm -rf $dialog_log
 			exit 1
 			fi
 			
 		else
 			ScriptLogUpdate "[ Function-Check Bootstrap Token ]: Is not set and could not be transferred successfully"
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 		fi
 		
@@ -631,6 +641,7 @@ then
 		ScriptLogUpdate "[ Function-Check MDM Service ]: ERROR Server at $Jamf_Pro_URL is unavailable, status code: $curlRESULT"
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
@@ -638,6 +649,7 @@ else
 	ScriptLogUpdate "[ Function-Check MDM Service ]: Warning Device is not enrolled with a MDM service or URL cold not be extracted."
 	ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 	killProcess "caffeinate"
+	rm -rf $dialog_log
 	exit 1
 fi
 
@@ -651,6 +663,7 @@ function get_macos_data_Sofa_feed() {
 	if ! grep -q "\"$model\"" <<< "$macos_data_feed"; then
 		ScriptLogUpdate "[ Sofa Data Feed ]: Could not find your model ($model) in the JSON feed"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
@@ -658,6 +671,7 @@ function get_macos_data_Sofa_feed() {
 	if [[ -z "$supported_os" ]]; then
 		ScriptLogUpdate "[ Sofa Data Feed ]: Could not find SupportedOS for $model"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
@@ -683,6 +697,7 @@ function get_macos_data_Sofa_feed() {
 	if [[ -z "$index" ]]; then
 		ScriptLogUpdate "[ Sofa Data Feed ]: Could not find OSVersion \"$macOS_Name\" in the feed"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
@@ -925,6 +940,7 @@ case "$Manage_macOSupdateSelection" in
 				;;
 				false|*)
 					killProcess "caffeinate"
+					rm -rf $dialog_log
 					exit 0
 				;;
 			esac
@@ -947,6 +963,7 @@ case "$Manage_macOSupdateSelection" in
 				;;
 				false|*)
 					killProcess "caffeinate"
+					rm -rf $dialog_log
 					exit 0
 				;;
 			esac
@@ -969,6 +986,7 @@ case "$Manage_macOSupdateSelection" in
 				;;
 				false|*)
 					killProcess "caffeinate"
+					rm -rf $dialog_log
 					exit 0
 				;;
 			esac
@@ -978,6 +996,7 @@ case "$Manage_macOSupdateSelection" in
 	*)
 		ScriptLogUpdate "[ Function-Check macOS ]: Invalid value for Manage_macOSupdateSelection: $Manage_macOSupdateSelection"
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	;;
 esac
@@ -1290,6 +1309,7 @@ function get_api_token() {
 				
 				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
 				killProcess "caffeinate"
+				rm -rf $dialog_log
 				exit 1
 			fi
 		else
@@ -1315,6 +1335,7 @@ function get_api_token() {
 			ScriptLogUpdate "[ Function-GET API Token ]: Verify the --auth-jamf-client=ClientID and --auth-jamf-secret=ClientSecret are values."
 			ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * * #"
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 		fi
 	fi
@@ -1354,6 +1375,7 @@ function check_DDM_Status_Jamf() {
 					ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 					delete_api_token
 					killProcess "caffeinate"
+					rm -rf $dialog_log
 					exit 1
 				fi
 			else
@@ -1361,6 +1383,7 @@ function check_DDM_Status_Jamf() {
 				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 				delete_api_token
 				killProcess "caffeinate"
+				rm -rf $dialog_log
 				exit 1
 			fi
 		else
@@ -1384,6 +1407,7 @@ function check_DDM_Status_Jamf() {
 				ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 				delete_api_token
 				killProcess "caffeinate"
+				rm -rf $dialog_log
 				exit 1
 				
 			fi
@@ -1392,6 +1416,7 @@ function check_DDM_Status_Jamf() {
 			ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 			delete_api_token
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 		fi
 	fi
@@ -1426,6 +1451,7 @@ function get_Device_Informations_from_Jamf() {
 						then
 							ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is activated. The user will not be notified. Will try again on the next cycle"
 							killProcess "caffeinate"
+							rm -rf $dialog_log
 							exit 0
 						else
 							ScriptLogUpdate "[ Function-Check Bootstrap Token ]: DND is not activated. Prompt the user to enable the bootstraptoken"
@@ -1441,17 +1467,20 @@ function get_Device_Informations_from_Jamf() {
 			else
 				delete_api_token
 				killProcess "caffeinate"
+				rm -rf $dialog_log
 				exit 1
 			fi
 		else
 			ScriptLogUpdate "[ Function-Get Device Informations ]: Error: Could not extract device ID."
 			delete_api_token
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 		fi
 	else
 		delete_api_token
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
@@ -1464,6 +1493,7 @@ function get_Device_Informations_from_Jamf() {
 		then
 			ScriptLogUpdate "[ Function-Get Device Informations ]: declarativeDeviceManagementEnabled is not true please check device"
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 		else
 			DDM_Status_on_Server="true"
@@ -1472,6 +1502,7 @@ function get_Device_Informations_from_Jamf() {
 		ScriptLogUpdate "[ Function-Get Device Informations ]: Error: Could not extract bootstrapTokenEscrowedStatus."
 		delete_api_token
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 }
@@ -1540,11 +1571,13 @@ function create_DDM_Update_Plan() {
 				else
 					ScriptLogUpdate "Error during the conversion of forceInstallLocalDateTime: $forceInstallLocalDateTime"
 					killProcess "caffeinate"
+					rm -rf $dialog_log
 			exit 1
 				fi
 			else
 				ScriptLogUpdate "forceInstallLocalDateTime not found or empty."
 				killProcess "caffeinate"
+				rm -rf $dialog_log
 				exit 1
 			fi
 			
@@ -1552,6 +1585,7 @@ function create_DDM_Update_Plan() {
 		else
 			ScriptLogUpdate "[ Function-Create Plan ]: Error when extracting the plan ID."
 			killProcess "caffeinate"
+			rm -rf $dialog_log
 			exit 1
 		fi
 	else
@@ -1561,6 +1595,7 @@ function create_DDM_Update_Plan() {
 		ScriptLogUpdate "# * * * * * * * * * * * * * * * * * * * * * * * END WITH ERROR * * * * * * * * * * * * * * * * * * * * * * *"
 		
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 }
@@ -1573,12 +1608,14 @@ function get_all_Plans_information_for_Device() {
 	if [ $? -ne 0 ]; then
 		ScriptLogUpdate "Error sending the API request."
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
 	if [[ ! "$existingPlansResponse" =~ ^\{.*\}$ ]]; then
 		ScriptLogUpdate "Invalid JSON response received."
 		killProcess "caffeinate"
+		rm -rf $dialog_log
 		exit 1
 	fi
 	
@@ -1664,6 +1701,7 @@ function get_all_Plans_information_for_Device() {
 				ScriptLogUpdate "There can only be one active plan."
 				ScriptLogUpdate "Please check the get_status_description function."
 				killProcess "caffeinate"
+				rm -rf $dialog_log
 				exit 1
 				
 			else
@@ -1711,11 +1749,13 @@ function get_all_Plans_information_for_Device() {
 					else
 						echo "Error during the conversion of forceInstallLocalDateTime: $active_forceInstallLocalDateTime"
 						killProcess "caffeinate"
+						rm -rf $dialog_log
 						exit 1
 					fi
 				else
 					echo "forceInstallLocalDateTime not found or empty."
 					killProcess "caffeinate"
+					rm -rf $dialog_log
 					exit 1
 				fi
 			fi
@@ -1999,14 +2039,17 @@ fi
 if [ "$active_dnd" = "true" ] && [ "$Dialog_Silent_Mode" = "true" ]; then
 	ScriptLogUpdate "[ Function-Dialog Promt ]: Both values are activated. Dialog will not be displayed."
 	killProcess "caffeinate"
+	rm -rf $dialog_log
 	exit 0
 elif [ "$active_dnd" = "true" ]; then
 	ScriptLogUpdate "[ Function-Dialog Promt ]: DND set by an application or macOS. The user will receive neither a dialog nor any information. Information is handled by macOS."
 	killProcess "caffeinate"
+	rm -rf $dialog_log
 	exit 0
 elif [ "$Dialog_Silent_Mode" = "true" ]; then
 	ScriptLogUpdate "[ Function-Dialog Promt ]: Dialog has been disabled by the administrator in the configuration profile."
 	killProcess "caffeinate"
+	rm -rf $dialog_log
 	exit 0
 else
 	ScriptLogUpdate "[ Function-Dialog Promt ]: Dialog will be initiated."
@@ -2064,7 +2107,7 @@ else
 	
 	wait $pid 2>/dev/null && result=$? || result=2
 	
-	rm $dialog_log
+	rm -rf $dialog_log
 	
 	if [ $result -eq 2 ]
 		then
