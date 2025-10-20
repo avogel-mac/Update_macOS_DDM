@@ -8,8 +8,8 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jamf/bin/
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="1.0.4"
-debugMode="${6:-"verbose"}"                                                  # Debug Mode [ verbose (default) | true | false ]
+scriptVersion="1.0.5"
+debugMode="${6:-"true"}"                                                  # Debug Mode [ verbose (default) | true | false ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -96,6 +96,7 @@ function killProcess() {
 # Check whether a user is at the computer and the device is not locked by the screensaver. 
 # A maximum of 10 times a sleep of 30 seconds is entered before the script continues so that 
 # the Jamf process is not held up too long (thanks, @mrmte)
+
 function waitForActiveUser() {
 	local KEEP_LOOPING="true"
 	local SLEEP_TIME=30
@@ -233,13 +234,14 @@ if [[ "$model" == VirtualMac* ]]; then
 fi
 
 case "$macOSMAJOR" in
+	26*)
+		macOS_Name="Tahoe $macOSMAJOR"      	  # Tahoe 26
+	;;
 	15*)
 		macOS_Name="Sequoia $macOSMAJOR"      # Sequoia 15
-		URL="https://sofa.macadmins.io/macOS_Sequoia.html"
 	;;
 	14*)
 		macOS_Name="Sonoma $macOSMAJOR"       # Sonoma 14
-		URL="https://sofa.macadmins.io/macOS_Sonoma.html"
 	;;
 esac
 
@@ -310,7 +312,7 @@ fi
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 swiftDialogMinimumRequiredVersion="2.5.5.4802" 
 dialog_bin="/usr/local/bin/dialog"
-dialog_log="/var/tmp/dialog.log"
+dialog_log=$( mktemp -u /var/tmp/dialogCommandFile.XXX.log )
 
 function dialogInstall() {
 	dialogURL=$(curl -L --silent --fail "https://api.github.com/repos/swiftDialog/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
@@ -1546,7 +1548,7 @@ function create_DDM_Update_Plan() {
 			
 			ScriptLogUpdate "Wait for 300 seconds (5 minutes) and then check the status of the plan"
 			
-			sleep 300
+			sleep 3
 			
 			refresh_api_token
 			
