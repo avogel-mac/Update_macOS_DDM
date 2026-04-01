@@ -8,7 +8,7 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jamf/bin/
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="1.0.5"
+scriptVersion="1.0.6"
 debugMode="${6:-"true"}"                                                  # Debug Mode [ verbose (default) | true | false ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -211,12 +211,23 @@ done
 # Make sure that the computer does not go into sleep mode while the script is running
 symPID="$$"
 caffeinate -dimsu -w "$symPID" &>/dev/null &
-currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
-realname=$(dscl . read /Users/$currentUser RealName | tail -n1 | awk '{print $1}')
+currentUser=$(echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }')
+fullname=$(dscl . read /Users/"$currentUser" RealName | sed '1d')
 
-# If realname only contains “RealName:”, read out again and remove “RealName:”
-if [ "$realname" = "RealName:" ]; then
-	realname=$(dscl . read /Users/"$currentUser" RealName | sed 's/RealName: //')
+if [[ "$fullname" = "RealName:" ]]; then
+	fullname=$(dscl . read /Users/"$currentUser" RealName | sed 's/RealName: //')
+fi
+
+if [[ -z "$fullname" ]]; then
+	fullname="$currentUser"
+fi
+
+fullname=$(echo "$fullname" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+realname=$(echo "$fullname" | awk '{print $1}')
+lastname=$(echo "$fullname" | cut -d' ' -f2-)
+
+if [[ "$lastname" == "$fullname" ]]; then
+	lastname=""
 fi
 
 udid=$(/usr/sbin/ioreg -rd1 -c IOPlatformExpertDevice | /usr/bin/grep -i "UUID" | /usr/bin/cut -c27-62)
@@ -733,6 +744,104 @@ function get_macos_data_Sofa_feed() {
 	unset macos_data_feed
 }
 
+function get_macos_data_Sofa_feed_jq() {
+	
+	macos_data_feed="$(curl -s --compressed https://sofafeed.macadmins.io/v1/macos_data_feed.json)"
+	
+	if [[ -z "$macos_data_feed" ]]; then
+		ScriptLogUpdate "[ Sofa Data Feed ]: Could not download JSON feed"
+		killProcess "caffeinate"
+		rm -rf "$dialog_log"
+		exit 1
+	fi
+	
+	
+	if ! echo "$macos_data_feed" | jq -e --arg model "$model" '
+		any(
+			.OSVersions[]?.SupportedModels[]?.Identifiers? | objects | keys[];
+			. == $model
+		)
+	' >/dev/null 2>&1; then
+			echo "[ Sofa Data Feed ]: Could not find your model ($model) in the JSON feed"
+			killProcess "caffeinate"
+			rm -rf "$dialog_log"
+			exit 1
+		fi
+	
+	
+	supported_os=$(echo "$macos_data_feed" | jq -r --arg model "$model" '
+		.OSVersions[]
+		| select(
+			any(
+				.SupportedModels[]?.Identifiers? | objects | keys[];
+				. == $model
+			)
+		)
+		| .OSVersion
+	' | head -n 1)
+			
+			if [[ -z "$supported_os" || "$supported_os" == "null" ]]; then
+				echo "[ Sofa Data Feed ]: Could not find SupportedOS for $model"
+				killProcess "caffeinate"
+				rm -rf "$dialog_log"
+				exit 1
+			fi
+			
+			ScriptLogUpdate "[ Sofa Data Feed ]: Latest Supported OS for $model: $supported_os"
+			
+			# Gewünschte OSVersion im Feed finden
+			if ! echo "$macos_data_feed" | jq -e --arg os "$macOS_Name" '
+		.OSVersions[]
+		| select(.OSVersion == $os)
+	' >/dev/null 2>&1; then
+					echo "[ Sofa Data Feed ]: Could not find OSVersion \"$macOS_Name\" in the feed"
+					killProcess "caffeinate"
+					rm -rf "$dialog_log"
+					exit 1
+				fi
+			
+			latest_product_version=$(echo "$macos_data_feed" | jq -r --arg os "$macOS_Name" '
+		.OSVersions[]
+		| select(.OSVersion == $os)
+		| .Latest.ProductVersion
+	')
+					
+					latest_cves=$(echo "$macos_data_feed" | jq -r --arg os "$macOS_Name" '
+		.OSVersions[]
+		| select(.OSVersion == $os)
+		| .Latest.UniqueCVEsCount
+	')
+							
+							latest_exploits=$(echo "$macos_data_feed" | jq -r --arg os "$macOS_Name" '
+		.OSVersions[]
+		| select(.OSVersion == $os)
+		| (.Latest.ActivelyExploitedCVEs | length)
+	')
+									
+if [[ -z "$latest_product_version" || "$latest_product_version" == "null" ]]; then
+	latest_product_version="Unknown"
+fi
+
+if [[ -z "$latest_cves" || "$latest_cves" == "null" ]]; then
+	latest_cves="0"
+fi
+
+if [[ -z "$latest_exploits" || "$latest_exploits" == "null" ]]; then
+	latest_exploits="0"
+fi
+
+critical_Update="false"
+critical_Update_text=""
+if [[ "$latest_exploits" -gt 0 ]]; then
+	critical_Update="true"
+	critical_Update_text="${critical_Updatetext}"
+fi
+
+Sofa_Infobox="${CVEs_text}: $latest_cves \n\n${ActiveExploits_text}: $latest_exploits \n\n$critical_Update_text"
+
+unset macos_data_feed
+}
+
 function get_local_SoftwareUpdate_plist_data() {
 	
 	/usr/sbin/softwareupdate -l 2>&1 >/dev/null
@@ -771,7 +880,19 @@ function get_local_SoftwareUpdate_plist_data() {
 
 
 
-get_macos_data_Sofa_feed
+if [[ "$macOSMAJOR" -eq 26 ]]; then
+	if command -v jq >/dev/null 2>&1; then
+		ScriptLogUpdate "[ Sofa Data Feed ]: macOS 26 detected + jq available → using jq version"
+		get_macos_data_Sofa_feed_jq
+	else
+		ScriptLogUpdate "[ Sofa Data Feed ]: macOS 26 detected, but jq not found → using fallback"
+		get_macos_data_Sofa_feed
+	fi
+else
+	ScriptLogUpdate "[ Sofa Data Feed ]: macOS != 26 → using standard function"
+	get_macos_data_Sofa_feed
+fi
+
 get_local_SoftwareUpdate_plist_data
 
 # Check whether both values are either empty or explicitly ‘false’
@@ -1990,8 +2111,16 @@ if [ "$Dialog_Silent_Mode" = "false" ]; then
 	Dialog_update_titlefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_titlefont" "$Managed_Preferences" 2>/dev/null) || Dialog_update_titlefont="20"
 	Dialog_update_messagefont=$(/usr/libexec/PlistBuddy -c "Print :Dialog_Settings:Dialog_update_messagefont" "$Managed_Preferences" 2>/dev/null) || Dialog_update_messagefont="14"
 	
-	Standard_Update_Prompt=`/usr/libexec/PlistBuddy -c "Print :Messanges:StandardUpdatePrompt" "$Managed_Preferences"`
-	Standard_Update_Prompt="$(echo -e "$Standard_Update_Prompt" | /usr/bin/sed "s/%REAL_NAME%/${realname}/" | /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/" | /usr/bin/sed "s/%Install_Button_Custom%/${Install_Button_Custom}/" | /usr/bin/sed "s/%forceInstallLocalDateTime%/${Human_read_forceInstallLocalDateTime}/")"
+	Standard_Update_Prompt=$(/usr/libexec/PlistBuddy -c "Print :Messanges:StandardUpdatePrompt" "$Managed_Preferences")
+	Standard_Update_Prompt="$(
+	echo -e "$Standard_Update_Prompt" \
+	| /usr/bin/sed "s/%REAL_NAME%/${realname}/g" \
+	| /usr/bin/sed "s/%LAST_NAME%/${lastname}/g" \
+	| /usr/bin/sed "s/%FULL_NAME%/${fullname}/g" \
+	| /usr/bin/sed "s/%CURRENT_DEFERRAL_VALUE%/${CurrentDeferralValue}/g" \
+	| /usr/bin/sed "s/%Install_Button_Custom%/${Install_Button_Custom}/g" \
+	| /usr/bin/sed "s/%forceInstallLocalDateTime%/${Human_read_forceInstallLocalDateTime}/g"
+)"
 	
 	
 	Banner_dialog="false"
@@ -2037,6 +2166,8 @@ fi
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # Create default Dialog Arguments # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+			
+infobox="${Device_Info:-}<br><br>${Current_OS:-}: ${current_macOS:-}<br><br>${available_OS:-}: ${latest_updateVersion:-}<br><br>${Update_Details_Titel:-}<br><br>${Sofa_Infobox:-}"
 
 if [ "$active_dnd" = "true" ] && [ "$Dialog_Silent_Mode" = "true" ]; then
 	ScriptLogUpdate "[ Function-Dialog Promt ]: Both values are activated. Dialog will not be displayed."
@@ -2080,13 +2211,13 @@ else
 	--title \"${title}\" \
 	--message \"$Standard_Update_Prompt\" \
 	--icon \"$Icon\" \
-	--iconsize 128 \
+	--iconsize 200 \
 	--button1text \"$Install_Button_Custom in $buttontimer\" \
 	--button1disabled \
 	--button2text \"$Defer_Button_Custom in $buttontimer\" \
 	--button2disabled \
 	--timer \"$ScriptLogUpdate\" \
-	--infobox \"_________________\n\n"${Device_Info}"\n\n${Current_OS}: $current_macOS \n\n${available_OS}: $latest_updateVersion \n_________________\n${Update_Details_Titel} \n\n$Sofa_Infobox\" \
+	--infobox \"$infobox\" \
 	--commandfile \"$dialog_log\" \
 	--infotext \"$scriptVersion\" \ "
 	
@@ -2120,8 +2251,8 @@ else
 			
 		else
 			ScriptLogUpdate "User has clicked on install."
-			killProcess "caffeinate"
 			updateCLI
+			killProcess "caffeinate"
 			exit 0
 	fi
 fi
