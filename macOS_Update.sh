@@ -1414,7 +1414,7 @@ function get_api_token() {
 		
 		if [[ -n "$jamf_api_client" && -n "$jamf_api_secret" ]]
 		then
-			curl_response=$(curl --silent --location --request POST "${Jamf_Pro_URL}/api/oauth/token" --header "Content-Type: application/x-www-form-urlencoded" --data-urlencode "client_id=${jamf_api_client}" --data-urlencode "grant_type=client_credentials" --data-urlencode "client_secret=${jamf_api_secret}")
+			curl_response=$(curl --silent --location --request POST "${Jamf_Pro_URL}/api/v1/oauth/token" --header "Content-Type: application/x-www-form-urlencoded" --data-urlencode "client_id=${jamf_api_client}" --data-urlencode "grant_type=client_credentials" --data-urlencode "client_secret=${jamf_api_secret}")
 			
 			if [[ $(echo "${curl_response}" | grep -c 'token') -gt 0 ]]
 			then
@@ -1551,11 +1551,14 @@ function get_Device_Informations_from_Jamf() {
 	bootstrap_status=""
 	DDM_Status_on_Server="false"
 	
-	deviceID_response=$(curl --silent --write-out "%{http_code}" --location --request GET "$Jamf_Pro_URL/JSSResource/computers/udid/$udid" --header "Authorization: Bearer ${api_token}" -H "accept: application/xml")
+	deviceID_response=$(curl --silent --write-out "%{http_code}" --location --request GET "${Jamf_Pro_URL}/api/v4/computers-inventory?section=GENERAL&filter=udid%3D%3D%22$udid%22" --header "Accept: application/json" --header "Authorization: Bearer ${api_token}")
 	
 	if [[ $(echo "${deviceID_response}" | grep -c '200') -gt 0 ]]
 	then
-		deviceID=$(echo $deviceID_response | /usr/bin/awk -F'<id>|</id>' '{print $2}')
+		#deviceID=$(echo $deviceID_response | /usr/bin/awk -F'<id>|</id>' '{print $2}')
+		deviceID_body=$(printf '%s' "$deviceID_response" | sed 's/[0-9]\{3\}$//')
+		deviceID=$(jq -r '.results[0].id' <<<"$deviceID_body")
+		echo "deviceID: $deviceID"
 		
 		if [[ -n "$deviceID" ]];
 		then
@@ -1607,7 +1610,7 @@ function get_Device_Informations_from_Jamf() {
 		exit 1
 	fi
 	
-	DDM_response=$(curl -s --request GET "${Jamf_Pro_URL}/api/v1/computers-inventory/${deviceID}?section=GENERAL" -H "accept: application/json" -H "Authorization: Bearer ${api_token}" )
+	DDM_response=$(curl -s --request GET "${Jamf_Pro_URL}/api/v4/computers-inventory/${deviceID}?section=GENERAL" -H "accept: application/json" -H "Authorization: Bearer ${api_token}" )
 	DDM_Status_in_Jamf=$(echo "$DDM_response" | tr -d '\r' | grep -m1 'declarativeDeviceManagementEnabled' | grep -oE 'true|false')
 	
 	if [[ -n "$DDM_Status_in_Jamf" ]]
