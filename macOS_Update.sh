@@ -245,6 +245,9 @@ if [[ "$model" == VirtualMac* ]]; then
 fi
 
 case "$macOSMAJOR" in
+	27*)
+		macOS_Name="Golden Gate $macOSMAJOR"      	  # Golden Gate 26
+	;;
 	26*)
 		macOS_Name="Tahoe $macOSMAJOR"      	  # Tahoe 26
 	;;
