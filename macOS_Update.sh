@@ -8,7 +8,7 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jamf/bin/
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-scriptVersion="1.0.7"
+scriptVersion="1.0.8"
 debugMode="${6:-"true"}"                                                  # Debug Mode [ verbose (default) | true | false ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # Plist location  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -881,7 +881,86 @@ function get_local_SoftwareUpdate_plist_data() {
 	fi
 }
 
+function get_available_updates_current_major() {
+	
+	ScriptLogUpdate "[ Function-Check macOS ]: Searching available macOS versions for current major $macOSMAJOR"
+	
+	fullInstallerList=$(/usr/sbin/softwareupdate --list-full-installers 2>&1)
+	
+	available_versions_current_major=$(echo "$fullInstallerList" | \
+	/usr/bin/awk -v major="$macOSMAJOR" '
+	/Version:/ {
+	line=$0
+	sub(/^.*Version: /, "", line)
+	sub(/,.*$/, "", line)
+	
+	split(line, versionParts, ".")
+	
+	if (versionParts[1] == major) {
+		print line
+	}
+	}'
+	)
+				
+if [[ -n "$available_versions_current_major" ]]; then
+	
+	ScriptLogUpdate "[ Function-Check macOS ]: Available versions for macOS major $macOSMAJOR:"
+	
+	while IFS= read -r version; do
+		[[ -n "$version" ]] && ScriptLogUpdate "[ Function-Check macOS ]:   - macOS $version"
+	done <<< "$available_versions_current_major"
+	
+else
+	
+	ScriptLogUpdate "[ Function-Check macOS ]: No macOS versions found for major $macOSMAJOR"
+	
+fi
+}
 
+
+function compare_versions() {
+	
+	local version1="$1"
+	local version2="$2"
+	
+	local v1_major v1_minor v1_patch
+	local v2_major v2_minor v2_patch
+	
+	IFS='.' read -r v1_major v1_minor v1_patch <<< "$version1"
+	IFS='.' read -r v2_major v2_minor v2_patch <<< "$version2"
+	
+	v1_major=${v1_major:-0}
+	v1_minor=${v1_minor:-0}
+	v1_patch=${v1_patch:-0}
+	
+	v2_major=${v2_major:-0}
+	v2_minor=${v2_minor:-0}
+	v2_patch=${v2_patch:-0}
+	
+	if (( v1_major > v2_major )); then
+		echo "greater"
+		return
+	elif (( v1_major < v2_major )); then
+		echo "less"
+		return
+	fi
+	
+	if (( v1_minor > v2_minor )); then
+		echo "greater"
+		return
+	elif (( v1_minor < v2_minor )); then
+		echo "less"
+		return
+	fi
+	
+	if (( v1_patch > v2_patch )); then
+		echo "greater"
+	elif (( v1_patch < v2_patch )); then
+		echo "less"
+	else
+		echo "equal"
+	fi
+}
 
 if [[ "$macOSMAJOR" -eq 26 ]]; then
 	if command -v jq >/dev/null 2>&1; then
@@ -896,7 +975,10 @@ else
 	get_macos_data_Sofa_feed
 fi
 
+
 get_local_SoftwareUpdate_plist_data
+get_available_updates_current_major
+
 
 # Check whether both values are either empty or explicitly ‘false’
 if { [ -z "$UpdateHour" ] || [ "$UpdateHour" = "false" ]; } && { [ -z "$UpdateMinute" ] || [ "$UpdateMinute" = "false" ]; }; then
@@ -1044,9 +1126,130 @@ ScriptLogUpdate "Scheduled update time: $futureUnixTimeDateTime"
 
 case "$Manage_macOSupdateSelection" in
 	"SPECIFIC_VERSION")
-		planversionType="SPECIFIC_VERSION"
-		planspecificVersion="$Manage_macOSspecificVersion"
-		latest_updateVersion="$Manage_macOSspecificVersion"
+		
+		ScriptLogUpdate "[ Function-Check macOS ]: Specific version selected."
+		ScriptLogUpdate "[ Function-Check macOS ]: Installed version: $current_macOS"
+		ScriptLogUpdate "[ Function-Check macOS ]: Requested version: $Manage_macOSspecificVersion"
+		
+		# ------------------------------------------------------------
+		# Check whether a specific version was configured
+		# ------------------------------------------------------------
+		
+		if [[ -z "$Manage_macOSspecificVersion" ]]; then
+			
+			ScriptLogUpdate "[ Function-Check macOS ]: ERROR: No specific macOS version configured."
+			
+			killProcess "caffeinate"
+			rm -rf "$dialog_log"
+			exit 1
+			
+		fi
+		
+		
+		# ------------------------------------------------------------
+		# Check whether requested version belongs to current major
+		# ------------------------------------------------------------
+		
+		specific_major="${Manage_macOSspecificVersion%%.*}"
+		
+		if [[ "$specific_major" != "$macOSMAJOR" ]]; then
+			
+			ScriptLogUpdate "[ Function-Check macOS ]: Requested macOS $Manage_macOSspecificVersion belongs to major $specific_major."
+			ScriptLogUpdate "[ Function-Check macOS ]: Installed macOS belongs to major $macOSMAJOR."
+			ScriptLogUpdate "[ Function-Check macOS ]: SPECIFIC_VERSION is limited to the currently installed major version."
+			ScriptLogUpdate "[ Function-Check macOS ]: No Updates available."
+			
+			killProcess "caffeinate"
+			rm -rf "$dialog_log"
+			exit 0
+			
+		fi
+		
+		
+		# ------------------------------------------------------------
+		# Compare installed version with requested version
+		# ------------------------------------------------------------
+		
+		version_comparison=$(compare_versions "$current_macOS" "$Manage_macOSspecificVersion")
+		
+		case "$version_comparison" in
+			
+			"equal")
+				
+				ScriptLogUpdate "[ Function-Check macOS ]: Device is already running macOS $Manage_macOSspecificVersion."
+				ScriptLogUpdate "[ Function-Check macOS ]: No Updates available."
+				
+				killProcess "caffeinate"
+				rm -rf "$dialog_log"
+				exit 0
+				
+			;;
+			
+			
+			"greater")
+				
+				ScriptLogUpdate "[ Function-Check macOS ]: Installed macOS $current_macOS is newer than requested macOS $Manage_macOSspecificVersion."
+				ScriptLogUpdate "[ Function-Check macOS ]: Downgrades are not supported."
+				ScriptLogUpdate "[ Function-Check macOS ]: No Updates available."
+				
+				killProcess "caffeinate"
+				rm -rf "$dialog_log"
+				exit 0
+				
+			;;
+			
+			
+			"less")
+				
+				ScriptLogUpdate "[ Function-Check macOS ]: macOS $Manage_macOSspecificVersion is newer than installed macOS $current_macOS."
+				
+			;;
+			
+		esac
+		
+		
+		# ------------------------------------------------------------
+		# Check whether requested version was found
+		# ------------------------------------------------------------
+		
+		specific_version_available="false"
+		
+		while IFS= read -r available_version; do
+			
+			if [[ "$available_version" == "$Manage_macOSspecificVersion" ]]; then
+				
+				specific_version_available="true"
+				break
+				
+			fi
+			
+		done <<< "$available_versions_current_major"
+		
+		
+		# ------------------------------------------------------------
+		# Create DDM plan information
+		# ------------------------------------------------------------
+		
+		if [[ "$specific_version_available" == "true" ]]; then
+			
+			ScriptLogUpdate "[ Function-Check macOS ]: Requested macOS $Manage_macOSspecificVersion is available."
+			ScriptLogUpdate "[ Function-Check macOS ]: Creating DDM update plan for specific version."
+			
+			planversionType="SPECIFIC_VERSION"
+			planspecificVersion="$Manage_macOSspecificVersion"
+			latest_updateVersion="$Manage_macOSspecificVersion"
+			
+		else
+			
+			ScriptLogUpdate "[ Function-Check macOS ]: Requested macOS $Manage_macOSspecificVersion was not found in the available versions for major $macOSMAJOR."
+			ScriptLogUpdate "[ Function-Check macOS ]: No Updates available."
+			
+			killProcess "caffeinate"
+			rm -rf "$dialog_log"
+			exit 0
+			
+		fi
+		
 	;;
 	
 	"LATEST_ANY")
